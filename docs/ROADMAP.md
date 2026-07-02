@@ -83,7 +83,8 @@ Current scope: a desktop-ready browser dashboard is implemented as a GUI adapter
 over existing account summary, focus, activity, progression score,
 recommendation, and shopping-list outputs. It can be written as standalone HTML
 or served locally with `gw2planner gui serve`. Served dashboards expose sync
-status plus a refresh action for reloading account data from the selected source.
+status plus a refresh action for reloading account data from the selected source,
+including inline refresh progress and failure details.
 Price-free shopping-list generation is available from recipe effective costs and
 can be exported as JSON or CSV. Optional shopping-list market price overlays can
 fetch `/v2/commerce/prices` summaries for missing item requirements without

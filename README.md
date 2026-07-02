@@ -112,9 +112,10 @@ uv run gw2planner doctor --require-api-key
 ```
 
 `gui build` writes a standalone snapshot. `gui serve` hosts the dashboard locally
-with a refresh control that reloads account data from the selected source.
-Dashboard shopping-list prices are opt-in with `--include-shopping-list-prices`.
-Use `--port 0` to let the operating system choose an unused local port.
+with a refresh control that reloads account data from the selected source and
+shows inline refresh errors without a traceback. Dashboard shopping-list prices
+are opt-in with `--include-shopping-list-prices`. Use `--port 0` to let the
+operating system choose an unused local port.
 
 Profiles are stored as JSON at `GW2PLANNER_PROFILE_FILE` or under
 `GW2PLANNER_CONFIG_DIR`. A profile can point at local exports or an API key

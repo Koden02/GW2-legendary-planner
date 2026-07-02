@@ -49,6 +49,7 @@ class DashboardSyncStatus(BaseModel):
     loaded_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     last_refresh_at: datetime | None = None
     message: str = "Dashboard built from a saved account snapshot."
+    error: str | None = None
 
 
 class DashboardPayload(BaseModel):
@@ -286,6 +287,7 @@ def _summary_metrics(summary: AccountSummary) -> list[DashboardMetric]:
 
 
 def _render_sync_status(status: DashboardSyncStatus) -> str:
+    error_hidden = "" if status.error else " hidden"
     refresh_button = (
         """
         <button class="sync-refresh" type="button" data-refresh-dashboard>
@@ -296,12 +298,23 @@ def _render_sync_status(status: DashboardSyncStatus) -> str:
         else ""
     )
     cache_text = "cache on" if status.cache_enabled else "cache off"
+    last_refresh_text = (
+        _format_datetime(status.last_refresh_at)
+        if status.last_refresh_at
+        else "Not yet"
+    )
     return f"""
-    <section class="sync-bar tone-{escape(status.state)}" aria-label="Dashboard sync status">
+    <section
+      class="sync-bar tone-{escape(status.state)}"
+      aria-label="Dashboard sync status"
+      aria-live="polite"
+      data-sync-bar
+    >
       <div>
         <p class="eyebrow">Sync Status</p>
         <strong data-sync-state>{escape(status.state.title())}</strong>
-        <span>{escape(status.message)}</span>
+        <span id="sync-message" data-sync-message>{escape(status.message)}</span>
+        <p class="sync-error" data-sync-error{error_hidden}>{escape(status.error or "")}</p>
       </div>
       <dl>
         <div>
@@ -314,7 +327,11 @@ def _render_sync_status(status: DashboardSyncStatus) -> str:
         </div>
         <div>
           <dt>Loaded</dt>
-          <dd>{escape(_format_datetime(status.loaded_at))}</dd>
+          <dd data-sync-loaded>{escape(_format_datetime(status.loaded_at))}</dd>
+        </div>
+        <div>
+          <dt>Last Refresh</dt>
+          <dd data-sync-last-refresh>{escape(last_refresh_text)}</dd>
         </div>
         <div>
           <dt>Cache</dt>
@@ -788,6 +805,17 @@ h2 {
   border-left-color: var(--info);
 }
 
+.sync-error {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.sync-error[hidden] {
+  display: none;
+}
+
 .sync-bar strong {
   display: block;
 }
@@ -801,7 +829,7 @@ h2 {
 
 .sync-bar dl {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin: 0;
 }
@@ -1160,6 +1188,67 @@ td strong {
 
 _DASHBOARD_JS = """
 (function () {
+  function formatSyncDate(value) {
+    if (!value) {
+      return "Not yet";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hour = String(date.getUTCHours()).padStart(2, "0");
+    const minute = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hour}:${minute} UTC`;
+  }
+
+  function titleCase(value) {
+    if (!value) {
+      return "Ready";
+    }
+    return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+  }
+
+  function readInitialSyncStatus() {
+    const data = document.querySelector("#dashboard-data");
+    if (!data || !data.textContent) {
+      return {};
+    }
+    try {
+      const payload = JSON.parse(data.textContent);
+      return payload.sync_status || {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function applySyncStatus(status) {
+    const nextState = status.state || "ready";
+    if (syncBar) {
+      ["ready", "refreshing", "error"].forEach((state) => {
+        syncBar.classList.toggle(`tone-${state}`, state === nextState);
+      });
+    }
+    if (syncState) {
+      syncState.textContent = titleCase(nextState);
+    }
+    if (syncMessage) {
+      syncMessage.textContent = status.message || "";
+    }
+    if (syncLoaded) {
+      syncLoaded.textContent = formatSyncDate(status.loaded_at);
+    }
+    if (syncLastRefresh) {
+      syncLastRefresh.textContent = formatSyncDate(status.last_refresh_at);
+    }
+    if (syncError) {
+      syncError.textContent = status.error || "";
+      syncError.hidden = !status.error;
+    }
+  }
+
   const tabs = Array.from(document.querySelectorAll("[data-panel-target]"));
   const panels = Array.from(document.querySelectorAll("[data-panel]"));
 
@@ -1176,28 +1265,52 @@ _DASHBOARD_JS = """
   });
 
   const refreshButton = document.querySelector("[data-refresh-dashboard]");
+  const syncBar = document.querySelector("[data-sync-bar]");
   const syncState = document.querySelector("[data-sync-state]");
+  const syncMessage = document.querySelector("[data-sync-message]");
+  const syncError = document.querySelector("[data-sync-error]");
+  const syncLoaded = document.querySelector("[data-sync-loaded]");
+  const syncLastRefresh = document.querySelector("[data-sync-last-refresh]");
+  let syncStatus = readInitialSyncStatus();
   if (refreshButton) {
     refreshButton.addEventListener("click", async () => {
       refreshButton.disabled = true;
-      const originalText = refreshButton.textContent;
+      const originalText = refreshButton.textContent.trim();
       refreshButton.textContent = "Refreshing";
-      if (syncState) {
-        syncState.textContent = "Refreshing";
-      }
+      refreshButton.setAttribute("aria-busy", "true");
+      applySyncStatus({
+        ...syncStatus,
+        state: "refreshing",
+        message: "Refreshing account data from the selected source.",
+        error: null,
+      });
 
       try {
         const response = await fetch("/api/refresh", { method: "POST" });
+        const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(`Refresh failed with ${response.status}`);
+          throw new Error(
+            payload.error || payload.message || `Refresh failed with ${response.status}`
+          );
         }
+        syncStatus = payload;
+        applySyncStatus({
+          ...syncStatus,
+          message: "Refresh complete. Reloading dashboard.",
+          error: null,
+        });
         window.location.reload();
       } catch (error) {
         refreshButton.disabled = false;
+        refreshButton.removeAttribute("aria-busy");
         refreshButton.textContent = originalText || "Refresh";
-        if (syncState) {
-          syncState.textContent = "Error";
-        }
+        syncStatus = {
+          ...syncStatus,
+          state: "error",
+          message: "Refresh failed. Fix the source issue and try again.",
+          error: error instanceof Error ? error.message : String(error),
+        };
+        applySyncStatus(syncStatus);
       }
     });
   }

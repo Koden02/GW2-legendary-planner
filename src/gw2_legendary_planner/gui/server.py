@@ -17,6 +17,10 @@ from gw2_legendary_planner.gui.dashboard import (
 DashboardRefreshProvider = Callable[[], DashboardPayload]
 
 
+class DashboardRefreshUnavailableError(RuntimeError):
+    """Raised when refresh is requested for a static dashboard server."""
+
+
 class DashboardServer(ThreadingHTTPServer):
     """HTTP server for a dashboard page with optional refresh support."""
 
@@ -50,13 +54,36 @@ class DashboardServer(ThreadingHTTPServer):
 
     def refresh_dashboard(self) -> DashboardPayload:
         if not self._refresh_provider:
-            raise RuntimeError("Dashboard refresh is not available for this server.")
+            raise DashboardRefreshUnavailableError(
+                "Dashboard refresh is not available for this server."
+            )
         payload = self._refresh_provider()
         html = render_dashboard_html(payload)
         with self._lock:
             self._payload = payload
             self._html = html
         return payload
+
+    def record_refresh_error(self, error: Exception) -> dict[str, Any]:
+        error_message = str(error) or error.__class__.__name__
+        with self._lock:
+            current_status = (
+                self._payload.sync_status
+                if self._payload
+                else DashboardSyncStatus(refresh_available=self._refresh_provider is not None)
+            )
+            error_status = current_status.model_copy(
+                update={
+                    "state": "error",
+                    "refresh_available": self._refresh_provider is not None,
+                    "message": "Refresh failed. Fix the source issue and try again.",
+                    "error": error_message,
+                }
+            )
+            if self._payload:
+                self._payload.sync_status = error_status
+                self._html = render_dashboard_html(self._payload)
+            return error_status.model_dump(mode="json")
 
 
 def create_dashboard_server(
@@ -93,11 +120,13 @@ def create_dashboard_server(
                 return
             try:
                 payload = self.server.refresh_dashboard()
-            except RuntimeError as exc:
-                self._send_json({"error": str(exc)}, status=HTTPStatus.METHOD_NOT_ALLOWED)
+            except DashboardRefreshUnavailableError as exc:
+                status_payload = self.server.record_refresh_error(exc)
+                self._send_json(status_payload, status=HTTPStatus.METHOD_NOT_ALLOWED)
                 return
             except Exception as exc:
-                self._send_json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+                status_payload = self.server.record_refresh_error(exc)
+                self._send_json(status_payload, status=HTTPStatus.INTERNAL_SERVER_ERROR)
                 return
             self._send_json(payload.sync_status.model_dump(mode="json"))
 

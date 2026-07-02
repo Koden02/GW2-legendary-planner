@@ -61,6 +61,30 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert 'data-panel-target="recommendations"' in html
 
 
+def test_dashboard_html_renders_live_sync_metadata() -> None:
+    payload = _sample_dashboard_payload(
+        sync_status=DashboardSyncStatus(
+            mode="live",
+            source_kind="gw2_api",
+            cache_enabled=False,
+            refresh_available=True,
+            loaded_at=datetime(2026, 7, 2, 12, 0, tzinfo=UTC),
+            last_refresh_at=datetime(2026, 7, 2, 12, 5, tzinfo=UTC),
+            message="Ready for live refresh.",
+        )
+    )
+
+    html = render_dashboard_html(payload)
+
+    assert 'data-sync-bar' in html
+    assert 'data-sync-message' in html
+    assert 'data-sync-last-refresh' in html
+    assert "Ready for live refresh." in html
+    assert "2026-07-02 12:05 UTC" in html
+    assert "cache off" in html
+    assert "Refresh" in html
+
+
 def test_dashboard_html_can_include_shopping_list_prices() -> None:
     payload = _sample_dashboard_payload(include_prices=True)
 
@@ -174,6 +198,60 @@ def test_dashboard_server_refreshes_from_provider() -> None:
     assert refresh.status_code == 200
     assert refresh.json()["message"] == "Refresh 1"
     assert "Refresh 1" in page.text
+
+
+def test_dashboard_server_refresh_error_updates_status_and_page() -> None:
+    def refresh_provider():
+        raise RuntimeError("fixture refresh failure")
+
+    payload = _sample_dashboard_payload(
+        sync_status=DashboardSyncStatus(
+            mode="live",
+            source_kind="local_exports",
+            refresh_available=True,
+            message="Initial",
+        )
+    )
+    server = create_dashboard_server(payload, port=0, refresh_provider=refresh_provider)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        refresh = httpx.post(f"http://{host}:{port}/api/refresh", timeout=5)
+        status = httpx.get(f"http://{host}:{port}/api/status", timeout=5)
+        page = httpx.get(f"http://{host}:{port}/", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert refresh.status_code == 500
+    assert refresh.json()["state"] == "error"
+    assert refresh.json()["error"] == "fixture refresh failure"
+    assert status.json()["state"] == "error"
+    assert status.json()["error"] == "fixture refresh failure"
+    assert "Refresh failed. Fix the source issue and try again." in page.text
+    assert "fixture refresh failure" in page.text
+
+
+def test_dashboard_server_static_refresh_unavailable_remains_method_error() -> None:
+    payload = _sample_dashboard_payload()
+    server = create_dashboard_server(payload, port=0)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        refresh = httpx.post(f"http://{host}:{port}/api/refresh", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert refresh.status_code == 405
+    assert refresh.json()["state"] == "error"
+    assert refresh.json()["error"] == "Dashboard refresh is not available for this server."
 
 
 def _sample_dashboard_payload(
