@@ -1,0 +1,2707 @@
+[
+  {
+    "id": "legendary.twilight",
+    "output_kind": "item",
+    "output_id": 30704,
+    "output_quantity": 1,
+    "name": "Twilight",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "greatsword"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29185,
+        "quantity": 1,
+        "name": "Dusk"
+      },
+      {
+        "kind": "item",
+        "id": 19648,
+        "quantity": 1,
+        "name": "Gift of Twilight"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_bifrost",
+    "output_kind": "item",
+    "output_id": 30698,
+    "output_quantity": 1,
+    "name": "The Bifrost",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "staff"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29180,
+        "quantity": 1,
+        "name": "The Legend"
+      },
+      {
+        "kind": "item",
+        "id": 19654,
+        "quantity": 1,
+        "name": "Gift of The Bifrost"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.bolt",
+    "output_kind": "item",
+    "output_id": 30699,
+    "output_quantity": 1,
+    "name": "Bolt",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "sword"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29181,
+        "quantity": 1,
+        "name": "Zap"
+      },
+      {
+        "kind": "item",
+        "id": 19655,
+        "quantity": 1,
+        "name": "Gift of Bolt"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_dreamer",
+    "output_kind": "item",
+    "output_id": 30686,
+    "output_quantity": 1,
+    "name": "The Dreamer",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "shortbow"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29178,
+        "quantity": 1,
+        "name": "The Lover"
+      },
+      {
+        "kind": "item",
+        "id": 19660,
+        "quantity": 1,
+        "name": "Gift of The Dreamer"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_flameseeker_prophecies",
+    "output_kind": "item",
+    "output_id": 30696,
+    "output_quantity": 1,
+    "name": "The Flameseeker Prophecies",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "shield"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29177,
+        "quantity": 1,
+        "name": "The Chosen"
+      },
+      {
+        "kind": "item",
+        "id": 19653,
+        "quantity": 1,
+        "name": "Gift of The Flameseeker Prophecies"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.frenzy",
+    "output_kind": "item",
+    "output_id": 30697,
+    "output_quantity": 1,
+    "name": "Frenzy",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "harpoon_gun"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29179,
+        "quantity": 1,
+        "name": "Rage"
+      },
+      {
+        "kind": "item",
+        "id": 19659,
+        "quantity": 1,
+        "name": "Gift of Frenzy"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.frostfang",
+    "output_kind": "item",
+    "output_id": 30684,
+    "output_quantity": 1,
+    "name": "Frostfang",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "axe"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29166,
+        "quantity": 1,
+        "name": "Tooth of Frostfang"
+      },
+      {
+        "kind": "item",
+        "id": 19625,
+        "quantity": 1,
+        "name": "Gift of Frostfang"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.howler",
+    "output_kind": "item",
+    "output_id": 30702,
+    "output_quantity": 1,
+    "name": "Howler",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "warhorn"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29184,
+        "quantity": 1,
+        "name": "Howl"
+      },
+      {
+        "kind": "item",
+        "id": 19662,
+        "quantity": 1,
+        "name": "Gift of Howler"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.incinerator",
+    "output_kind": "item",
+    "output_id": 30687,
+    "output_quantity": 1,
+    "name": "Incinerator",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "dagger"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29167,
+        "quantity": 1,
+        "name": "Spark"
+      },
+      {
+        "kind": "item",
+        "id": 19645,
+        "quantity": 1,
+        "name": "Gift of Incinerator"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_juggernaut",
+    "output_kind": "item",
+    "output_id": 30690,
+    "output_quantity": 1,
+    "name": "The Juggernaut",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "hammer"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29170,
+        "quantity": 1,
+        "name": "The Colossus"
+      },
+      {
+        "kind": "item",
+        "id": 19649,
+        "quantity": 1,
+        "name": "Gift of The Juggernaut"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.kamohoalii_kotaki",
+    "output_kind": "item",
+    "output_id": 30691,
+    "output_quantity": 1,
+    "name": "Kamohoali'i Kotaki",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "spear"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29183,
+        "quantity": 1,
+        "name": "Venom"
+      },
+      {
+        "kind": "item",
+        "id": 19657,
+        "quantity": 1,
+        "name": "Gift of Kamohoali'i Kotaki"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.kraitkin",
+    "output_kind": "item",
+    "output_id": 30701,
+    "output_quantity": 1,
+    "name": "Kraitkin",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "trident"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29171,
+        "quantity": 1,
+        "name": "Carcharias"
+      },
+      {
+        "kind": "item",
+        "id": 19658,
+        "quantity": 1,
+        "name": "Gift of Kraitkin"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.kudzu",
+    "output_kind": "item",
+    "output_id": 30685,
+    "output_quantity": 1,
+    "name": "Kudzu",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "longbow"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29172,
+        "quantity": 1,
+        "name": "Leaf of Kudzu"
+      },
+      {
+        "kind": "item",
+        "id": 19644,
+        "quantity": 1,
+        "name": "Gift of Kudzu"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.meteorlogicus",
+    "output_kind": "item",
+    "output_id": 30695,
+    "output_quantity": 1,
+    "name": "Meteorlogicus",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "scepter"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29176,
+        "quantity": 1,
+        "name": "Storm"
+      },
+      {
+        "kind": "item",
+        "id": 19652,
+        "quantity": 1,
+        "name": "Gift of Meteorlogicus"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_minstrel",
+    "output_kind": "item",
+    "output_id": 30688,
+    "output_quantity": 1,
+    "name": "The Minstrel",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "focus"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29168,
+        "quantity": 1,
+        "name": "The Bard"
+      },
+      {
+        "kind": "item",
+        "id": 19646,
+        "quantity": 1,
+        "name": "Gift of The Minstrel"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_moot",
+    "output_kind": "item",
+    "output_id": 30692,
+    "output_quantity": 1,
+    "name": "The Moot",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "mace"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29173,
+        "quantity": 1,
+        "name": "The Energizer"
+      },
+      {
+        "kind": "item",
+        "id": 19650,
+        "quantity": 1,
+        "name": "Gift of The Moot"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.the_predator",
+    "output_kind": "item",
+    "output_id": 30694,
+    "output_quantity": 1,
+    "name": "The Predator",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "rifle"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29175,
+        "quantity": 1,
+        "name": "The Hunter"
+      },
+      {
+        "kind": "item",
+        "id": 19661,
+        "quantity": 1,
+        "name": "Gift of The Predator"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.quip",
+    "output_kind": "item",
+    "output_id": 30693,
+    "output_quantity": 1,
+    "name": "Quip",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "pistol"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29174,
+        "quantity": 1,
+        "name": "Chaos Gun"
+      },
+      {
+        "kind": "item",
+        "id": 19651,
+        "quantity": 1,
+        "name": "Gift of Quip"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.rodgort",
+    "output_kind": "item",
+    "output_id": 30700,
+    "output_quantity": 1,
+    "name": "Rodgort",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "torch"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29182,
+        "quantity": 1,
+        "name": "Rodgort's Flame"
+      },
+      {
+        "kind": "item",
+        "id": 19656,
+        "quantity": 1,
+        "name": "Gift of Rodgort"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "legendary.sunrise",
+    "output_kind": "item",
+    "output_id": 30703,
+    "output_quantity": 1,
+    "name": "Sunrise",
+    "tags": [
+      "legendary",
+      "generation_1",
+      "weapon",
+      "greatsword"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 29169,
+        "quantity": 1,
+        "name": "Dawn"
+      },
+      {
+        "kind": "item",
+        "id": 19647,
+        "quantity": 1,
+        "name": "Gift of Sunrise"
+      },
+      {
+        "kind": "item",
+        "id": 19674,
+        "quantity": 1,
+        "name": "Gift of Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 19626,
+        "quantity": 1,
+        "name": "Gift of Fortune"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_bifrost",
+    "output_kind": "item",
+    "output_id": 19654,
+    "output_quantity": 1,
+    "name": "Gift of The Bifrost",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19623,
+        "quantity": 1,
+        "name": "Gift of Energy"
+      },
+      {
+        "kind": "item",
+        "id": 19638,
+        "quantity": 1,
+        "name": "Gift of Color"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24572,
+        "quantity": 1,
+        "name": "Superior Sigil of Nullification"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.bolt",
+    "output_kind": "item",
+    "output_id": 19655,
+    "output_quantity": 1,
+    "name": "Gift of Bolt",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19639,
+        "quantity": 1,
+        "name": "Gift of Lightning"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24554,
+        "quantity": 1,
+        "name": "Superior Sigil of Air"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_dreamer",
+    "output_kind": "item",
+    "output_id": 19660,
+    "output_quantity": 1,
+    "name": "Gift of The Dreamer",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19628,
+        "quantity": 1,
+        "name": "Unicorn Statue"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24571,
+        "quantity": 1,
+        "name": "Superior Sigil of Purity"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_flameseeker_prophecies",
+    "output_kind": "item",
+    "output_id": 19653,
+    "output_quantity": 1,
+    "name": "Gift of The Flameseeker Prophecies",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19629,
+        "quantity": 1,
+        "name": "Gift of History"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24601,
+        "quantity": 1,
+        "name": "Superior Sigil of Battle"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.frenzy",
+    "output_kind": "item",
+    "output_id": 19659,
+    "output_quantity": 1,
+    "name": "Gift of Frenzy",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19643,
+        "quantity": 1,
+        "name": "Gift of Water"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24561,
+        "quantity": 1,
+        "name": "Superior Sigil of Rage"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.frostfang",
+    "output_kind": "item",
+    "output_id": 19625,
+    "output_quantity": 1,
+    "name": "Gift of Frostfang",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19624,
+        "quantity": 1,
+        "name": "Gift of Ice"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24555,
+        "quantity": 1,
+        "name": "Superior Sigil of Ice"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.howler",
+    "output_kind": "item",
+    "output_id": 19662,
+    "output_quantity": 1,
+    "name": "Gift of Howler",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19640,
+        "quantity": 1,
+        "name": "Wolf Statue"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24618,
+        "quantity": 1,
+        "name": "Superior Sigil of Accuracy"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.incinerator",
+    "output_kind": "item",
+    "output_id": 19645,
+    "output_quantity": 1,
+    "name": "Gift of Incinerator",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19634,
+        "quantity": 1,
+        "name": "Vial of Liquid Flame"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24548,
+        "quantity": 1,
+        "name": "Superior Sigil of Fire"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_juggernaut",
+    "output_kind": "item",
+    "output_id": 19649,
+    "output_quantity": 1,
+    "name": "Gift of The Juggernaut",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19633,
+        "quantity": 1,
+        "name": "Vial of Quicksilver"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24584,
+        "quantity": 1,
+        "name": "Superior Sigil of Benevolence"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.kamohoalii_kotaki",
+    "output_kind": "item",
+    "output_id": 19657,
+    "output_quantity": 1,
+    "name": "Gift of Kamohoali'i Kotaki",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19641,
+        "quantity": 1,
+        "name": "Shark Statue"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24612,
+        "quantity": 1,
+        "name": "Superior Sigil of Agony"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.kraitkin",
+    "output_kind": "item",
+    "output_id": 19658,
+    "output_quantity": 1,
+    "name": "Gift of Kraitkin",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19623,
+        "quantity": 1,
+        "name": "Gift of Energy"
+      },
+      {
+        "kind": "item",
+        "id": 19642,
+        "quantity": 1,
+        "name": "Eel Statue"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24632,
+        "quantity": 1,
+        "name": "Superior Sigil of Venom"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.kudzu",
+    "output_kind": "item",
+    "output_id": 19644,
+    "output_quantity": 1,
+    "name": "Gift of Kudzu",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19627,
+        "quantity": 1,
+        "name": "Gift of Nature"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24865,
+        "quantity": 1,
+        "name": "Superior Sigil of Celerity"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.meteorlogicus",
+    "output_kind": "item",
+    "output_id": 19652,
+    "output_quantity": 1,
+    "name": "Gift of Meteorlogicus",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19623,
+        "quantity": 1,
+        "name": "Gift of Energy"
+      },
+      {
+        "kind": "item",
+        "id": 19637,
+        "quantity": 1,
+        "name": "Gift of Weather"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24554,
+        "quantity": 1,
+        "name": "Superior Sigil of Air"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_minstrel",
+    "output_kind": "item",
+    "output_id": 19646,
+    "output_quantity": 1,
+    "name": "Gift of The Minstrel",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19623,
+        "quantity": 1,
+        "name": "Gift of Energy"
+      },
+      {
+        "kind": "item",
+        "id": 19630,
+        "quantity": 1,
+        "name": "Gift of Music"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24607,
+        "quantity": 1,
+        "name": "Superior Sigil of Energy"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_moot",
+    "output_kind": "item",
+    "output_id": 19650,
+    "output_quantity": 1,
+    "name": "Gift of The Moot",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19635,
+        "quantity": 1,
+        "name": "Gift of Entertainment"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24607,
+        "quantity": 1,
+        "name": "Superior Sigil of Energy"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.the_predator",
+    "output_kind": "item",
+    "output_id": 19661,
+    "output_quantity": 1,
+    "name": "Gift of The Predator",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19636,
+        "quantity": 1,
+        "name": "Gift of Stealth"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24615,
+        "quantity": 1,
+        "name": "Superior Sigil of Force"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.quip",
+    "output_kind": "item",
+    "output_id": 19651,
+    "output_quantity": 1,
+    "name": "Gift of Quip",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19635,
+        "quantity": 1,
+        "name": "Gift of Entertainment"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24592,
+        "quantity": 1,
+        "name": "Superior Sigil of Stamina"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.rodgort",
+    "output_kind": "item",
+    "output_id": 19656,
+    "output_quantity": 1,
+    "name": "Gift of Rodgort",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19622,
+        "quantity": 1,
+        "name": "Gift of Wood"
+      },
+      {
+        "kind": "item",
+        "id": 19634,
+        "quantity": 1,
+        "name": "Vial of Liquid Flame"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24548,
+        "quantity": 1,
+        "name": "Superior Sigil of Fire"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.sunrise",
+    "output_kind": "item",
+    "output_id": 19647,
+    "output_quantity": 1,
+    "name": "Gift of Sunrise",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19632,
+        "quantity": 1,
+        "name": "Gift of Light"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24562,
+        "quantity": 1,
+        "name": "Superior Sigil of Strength"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.twilight",
+    "output_kind": "item",
+    "output_id": 19648,
+    "output_quantity": 1,
+    "name": "Gift of Twilight",
+    "tags": [
+      "weapon_gift",
+      "generation_1",
+      "mystic_forge",
+      "wiki_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19621,
+        "quantity": 1,
+        "name": "Gift of Metal"
+      },
+      {
+        "kind": "item",
+        "id": 19631,
+        "quantity": 1,
+        "name": "Gift of Darkness"
+      },
+      {
+        "kind": "item",
+        "id": 19676,
+        "quantity": 100,
+        "name": "Icy Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Vendor purchase",
+          "note": "Purchased from Rojan the Penitent in Frostgorge Sound.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24570,
+        "quantity": 1,
+        "name": "Superior Sigil of Blood"
+      }
+    ]
+  },
+  {
+    "id": "gift.metal",
+    "output_kind": "item",
+    "output_id": 19621,
+    "output_quantity": 1,
+    "name": "Gift of Metal",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 19684,
+        "quantity": 250,
+        "name": "Mithril Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 19681,
+        "quantity": 250,
+        "name": "Darksteel Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 19686,
+        "quantity": 250,
+        "name": "Platinum Ingot"
+      }
+    ]
+  },
+  {
+    "id": "gift.wood",
+    "output_kind": "item",
+    "output_id": 19622,
+    "output_quantity": 1,
+    "name": "Gift of Wood",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19712,
+        "quantity": 250,
+        "name": "Ancient Wood Plank"
+      },
+      {
+        "kind": "item",
+        "id": 19709,
+        "quantity": 250,
+        "name": "Elder Wood Plank"
+      },
+      {
+        "kind": "item",
+        "id": 19711,
+        "quantity": 250,
+        "name": "Hard Wood Plank"
+      },
+      {
+        "kind": "item",
+        "id": 19714,
+        "quantity": 250,
+        "name": "Seasoned Wood Plank"
+      }
+    ]
+  },
+  {
+    "id": "gift.energy",
+    "output_kind": "item",
+    "output_id": 19623,
+    "output_quantity": 1,
+    "name": "Gift of Energy",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24277,
+        "quantity": 250,
+        "name": "Pile of Crystalline Dust"
+      },
+      {
+        "kind": "item",
+        "id": 24276,
+        "quantity": 250,
+        "name": "Pile of Incandescent Dust"
+      },
+      {
+        "kind": "item",
+        "id": 24275,
+        "quantity": 250,
+        "name": "Pile of Luminous Dust"
+      },
+      {
+        "kind": "item",
+        "id": 24274,
+        "quantity": 250,
+        "name": "Pile of Radiant Dust"
+      }
+    ]
+  },
+  {
+    "id": "gift.darkness",
+    "output_kind": "item",
+    "output_id": 19631,
+    "output_quantity": 1,
+    "name": "Gift of Darkness",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24310,
+        "quantity": 100,
+        "name": "Onyx Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19664,
+        "quantity": 1,
+        "name": "Gift of Ascalon",
+        "acquisition": {
+          "kind": "dungeon_vendor",
+          "label": "Dungeon vendor",
+          "note": "Purchased from dungeon vendors for Tales of Dungeon Delving.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Ascalon"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      }
+    ]
+  },
+  {
+    "id": "gift.light",
+    "output_kind": "item",
+    "output_id": 19632,
+    "output_quantity": 1,
+    "name": "Gift of Light",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24305,
+        "quantity": 100,
+        "name": "Charged Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19664,
+        "quantity": 1,
+        "name": "Gift of Ascalon",
+        "acquisition": {
+          "kind": "dungeon_vendor",
+          "label": "Dungeon vendor",
+          "note": "Purchased from dungeon vendors for Tales of Dungeon Delving.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Ascalon"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      }
+    ]
+  },
+  {
+    "id": "gift.lightning",
+    "output_kind": "item",
+    "output_id": 19639,
+    "output_quantity": 1,
+    "name": "Gift of Lightning",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24305,
+        "quantity": 100,
+        "name": "Charged Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19746,
+        "quantity": 250,
+        "name": "Bolt of Gossamer"
+      },
+      {
+        "kind": "item",
+        "id": 19664,
+        "quantity": 1,
+        "name": "Gift of Ascalon",
+        "acquisition": {
+          "kind": "dungeon_vendor",
+          "label": "Dungeon vendor",
+          "note": "Purchased from dungeon vendors for Tales of Dungeon Delving.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Ascalon"
+        }
+      }
+    ]
+  },
+  {
+    "id": "gift.ice",
+    "output_kind": "item",
+    "output_id": 19624,
+    "output_quantity": 1,
+    "name": "Gift of Ice",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24320,
+        "quantity": 100,
+        "name": "Glacial Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19670,
+        "quantity": 1,
+        "name": "Gift of the Sanctuary"
+      },
+      {
+        "kind": "item",
+        "id": 24340,
+        "quantity": 100,
+        "name": "Corrupted Lodestone"
+      }
+    ]
+  },
+  {
+    "id": "gift.water",
+    "output_kind": "item",
+    "output_id": 19643,
+    "output_quantity": 1,
+    "name": "Gift of Water",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24320,
+        "quantity": 100,
+        "name": "Glacial Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19670,
+        "quantity": 1,
+        "name": "Gift of the Sanctuary"
+      },
+      {
+        "kind": "item",
+        "id": 24315,
+        "quantity": 100,
+        "name": "Molten Lodestone"
+      }
+    ]
+  },
+  {
+    "id": "gift.nature",
+    "output_kind": "item",
+    "output_id": 19627,
+    "output_quantity": 1,
+    "name": "Gift of Nature",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 12128,
+        "quantity": 250,
+        "name": "Omnomberry"
+      },
+      {
+        "kind": "item",
+        "id": 19712,
+        "quantity": 250,
+        "name": "Ancient Wood Plank"
+      },
+      {
+        "kind": "item",
+        "id": 19667,
+        "quantity": 1,
+        "name": "Gift of Thorns"
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      }
+    ]
+  },
+  {
+    "id": "gift.stealth",
+    "output_kind": "item",
+    "output_id": 19636,
+    "output_quantity": 1,
+    "name": "Gift of Stealth",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24310,
+        "quantity": 100,
+        "name": "Onyx Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19671,
+        "quantity": 1,
+        "name": "Gift of Knowledge"
+      },
+      {
+        "kind": "item",
+        "id": 12545,
+        "quantity": 250,
+        "name": "Orrian Truffle"
+      }
+    ]
+  },
+  {
+    "id": "gift.entertainment",
+    "output_kind": "item",
+    "output_id": 19635,
+    "output_quantity": 1,
+    "name": "Gift of Entertainment",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 20000,
+        "quantity": 5,
+        "name": "Box o' Fun"
+      },
+      {
+        "kind": "item",
+        "id": 19665,
+        "quantity": 1,
+        "name": "Gift of the Nobleman"
+      },
+      {
+        "kind": "item",
+        "id": 19746,
+        "quantity": 250,
+        "name": "Bolt of Gossamer"
+      }
+    ]
+  },
+  {
+    "id": "gift.music",
+    "output_kind": "item",
+    "output_id": 19630,
+    "output_quantity": 1,
+    "name": "Gift of Music",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 19746,
+        "quantity": 250,
+        "name": "Bolt of Gossamer"
+      },
+      {
+        "kind": "item",
+        "id": 19665,
+        "quantity": 1,
+        "name": "Gift of the Nobleman"
+      },
+      {
+        "kind": "item",
+        "id": 24522,
+        "quantity": 100,
+        "name": "Opal Orb"
+      }
+    ]
+  },
+  {
+    "id": "gift.weather",
+    "output_kind": "item",
+    "output_id": 19637,
+    "output_quantity": 1,
+    "name": "Gift of Weather",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24305,
+        "quantity": 100,
+        "name": "Charged Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19732,
+        "quantity": 250,
+        "name": "Hardened Leather Section"
+      },
+      {
+        "kind": "item",
+        "id": 19671,
+        "quantity": 1,
+        "name": "Gift of Knowledge"
+      }
+    ]
+  },
+  {
+    "id": "gift.color",
+    "output_kind": "item",
+    "output_id": 19638,
+    "output_quantity": 1,
+    "name": "Gift of Color",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 20323,
+        "quantity": 100,
+        "name": "Unidentified Dye"
+      },
+      {
+        "kind": "item",
+        "id": 24522,
+        "quantity": 100,
+        "name": "Opal Orb"
+      },
+      {
+        "kind": "item",
+        "id": 24277,
+        "quantity": 250,
+        "name": "Pile of Crystalline Dust"
+      },
+      {
+        "kind": "item",
+        "id": 19669,
+        "quantity": 1,
+        "name": "Gift of Zhaitan"
+      }
+    ]
+  },
+  {
+    "id": "gift.history",
+    "output_kind": "item",
+    "output_id": 19629,
+    "output_quantity": 1,
+    "name": "Gift of History",
+    "tags": [
+      "gift",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24310,
+        "quantity": 100,
+        "name": "Onyx Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      },
+      {
+        "kind": "item",
+        "id": 19664,
+        "quantity": 1,
+        "name": "Gift of Ascalon",
+        "acquisition": {
+          "kind": "dungeon_vendor",
+          "label": "Dungeon vendor",
+          "note": "Purchased from dungeon vendors for Tales of Dungeon Delving.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Ascalon"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 24277,
+        "quantity": 250,
+        "name": "Pile of Crystalline Dust"
+      }
+    ]
+  },
+  {
+    "id": "component.unicorn_statue",
+    "output_kind": "item",
+    "output_id": 19628,
+    "output_quantity": 1,
+    "name": "Unicorn Statue",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24522,
+        "quantity": 100,
+        "name": "Opal Orb"
+      },
+      {
+        "kind": "item",
+        "id": 19667,
+        "quantity": 1,
+        "name": "Gift of Thorns"
+      },
+      {
+        "kind": "item",
+        "id": 24512,
+        "quantity": 100,
+        "name": "Chrysocola Orb"
+      }
+    ]
+  },
+  {
+    "id": "component.wolf_statue",
+    "output_kind": "item",
+    "output_id": 19640,
+    "output_quantity": 1,
+    "name": "Wolf Statue",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      },
+      {
+        "kind": "item",
+        "id": 19667,
+        "quantity": 1,
+        "name": "Gift of Thorns"
+      },
+      {
+        "kind": "item",
+        "id": 24357,
+        "quantity": 250,
+        "name": "Vicious Fang"
+      }
+    ]
+  },
+  {
+    "id": "component.eel_statue",
+    "output_kind": "item",
+    "output_id": 19642,
+    "output_quantity": 1,
+    "name": "Eel Statue",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24289,
+        "quantity": 250,
+        "name": "Armored Scale"
+      },
+      {
+        "kind": "item",
+        "id": 19737,
+        "quantity": 250,
+        "name": "Cured Hardened Leather Square"
+      },
+      {
+        "kind": "item",
+        "id": 19666,
+        "quantity": 1,
+        "name": "Gift of the Forgeman"
+      },
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      }
+    ]
+  },
+  {
+    "id": "component.shark_statue",
+    "output_kind": "item",
+    "output_id": 19641,
+    "output_quantity": 1,
+    "name": "Shark Statue",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19685,
+        "quantity": 250,
+        "name": "Orichalcum Ingot"
+      },
+      {
+        "kind": "item",
+        "id": 24295,
+        "quantity": 250,
+        "name": "Vial of Powerful Blood"
+      },
+      {
+        "kind": "item",
+        "id": 19669,
+        "quantity": 1,
+        "name": "Gift of Zhaitan"
+      },
+      {
+        "kind": "item",
+        "id": 24289,
+        "quantity": 250,
+        "name": "Armored Scale"
+      }
+    ]
+  },
+  {
+    "id": "component.vial_of_liquid_flame",
+    "output_kind": "item",
+    "output_id": 19634,
+    "output_quantity": 1,
+    "name": "Vial of Liquid Flame",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 12544,
+        "quantity": 250,
+        "name": "Ghost Pepper"
+      },
+      {
+        "kind": "item",
+        "id": 24315,
+        "quantity": 100,
+        "name": "Molten Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 19668,
+        "quantity": 1,
+        "name": "Gift of Baelfire"
+      },
+      {
+        "kind": "item",
+        "id": 24325,
+        "quantity": 100,
+        "name": "Destroyer Lodestone"
+      }
+    ]
+  },
+  {
+    "id": "component.vial_of_quicksilver",
+    "output_kind": "item",
+    "output_id": 19633,
+    "output_quantity": 1,
+    "name": "Vial of Quicksilver",
+    "tags": [
+      "component",
+      "generation_1",
+      "crafting_recipe",
+      "api_verified"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24315,
+        "quantity": 150,
+        "name": "Molten Lodestone"
+      },
+      {
+        "kind": "item",
+        "id": 24502,
+        "quantity": 250,
+        "name": "Silver Doubloon"
+      },
+      {
+        "kind": "item",
+        "id": 19666,
+        "quantity": 1,
+        "name": "Gift of the Forgeman"
+      },
+      {
+        "kind": "item",
+        "id": 19688,
+        "quantity": 250,
+        "name": "Steel Ingot"
+      }
+    ]
+  },
+  {
+    "id": "gift.mastery",
+    "output_kind": "item",
+    "output_id": 19674,
+    "output_quantity": 1,
+    "name": "Gift of Mastery",
+    "tags": [
+      "gift",
+      "generation_1",
+      "mystic_forge"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 20797,
+        "quantity": 1,
+        "name": "Bloodstone Shard",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Mystic Forge vendor",
+          "note": "Purchased from a Mystic Forge vendor for Spirit Shards.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Bloodstone_Shard"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19925,
+        "quantity": 250,
+        "name": "Obsidian Shard",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Currency vendors",
+          "note": "Available from several vendors and currency sources.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Obsidian_Shard"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19677,
+        "quantity": 1,
+        "name": "Gift of Exploration",
+        "acquisition": {
+          "kind": "world_completion",
+          "label": "Central Tyria world completion",
+          "note": "Earned from fully exploring Central Tyria maps.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Exploration"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19678,
+        "quantity": 1,
+        "name": "Gift of Battle",
+        "acquisition": {
+          "kind": "reward_track",
+          "label": "WvW reward track",
+          "note": "Acquired from the WvW Gift of Battle reward track.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Battle"
+        }
+      }
+    ]
+  },
+  {
+    "id": "gift.fortune",
+    "output_kind": "item",
+    "output_id": 19626,
+    "output_quantity": 1,
+    "name": "Gift of Fortune",
+    "tags": [
+      "gift",
+      "generation_1",
+      "mystic_forge"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 19675,
+        "quantity": 77,
+        "name": "Mystic Clover",
+        "acquisition": {
+          "kind": "mystic_forge",
+          "label": "Mystic Forge or mode rewards",
+          "note": "Commonly acquired from Mystic Forge recipes and selected reward sources.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Mystic_Clover"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 19721,
+        "quantity": 250,
+        "name": "Glob of Ectoplasm"
+      },
+      {
+        "kind": "item",
+        "id": 19673,
+        "quantity": 1,
+        "name": "Gift of Magic"
+      },
+      {
+        "kind": "item",
+        "id": 19672,
+        "quantity": 1,
+        "name": "Gift of Might"
+      }
+    ]
+  },
+  {
+    "id": "gift.might",
+    "output_kind": "item",
+    "output_id": 19672,
+    "output_quantity": 1,
+    "name": "Gift of Might",
+    "tags": [
+      "gift",
+      "generation_1",
+      "tier_6_materials"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24357,
+        "quantity": 250,
+        "name": "Vicious Fang"
+      },
+      {
+        "kind": "item",
+        "id": 24289,
+        "quantity": 250,
+        "name": "Armored Scale"
+      },
+      {
+        "kind": "item",
+        "id": 24351,
+        "quantity": 250,
+        "name": "Vicious Claw"
+      },
+      {
+        "kind": "item",
+        "id": 24358,
+        "quantity": 250,
+        "name": "Ancient Bone"
+      }
+    ]
+  },
+  {
+    "id": "gift.magic",
+    "output_kind": "item",
+    "output_id": 19673,
+    "output_quantity": 1,
+    "name": "Gift of Magic",
+    "tags": [
+      "gift",
+      "generation_1",
+      "tier_6_materials"
+    ],
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 24295,
+        "quantity": 250,
+        "name": "Vial of Powerful Blood"
+      },
+      {
+        "kind": "item",
+        "id": 24283,
+        "quantity": 250,
+        "name": "Powerful Venom Sac"
+      },
+      {
+        "kind": "item",
+        "id": 24300,
+        "quantity": 250,
+        "name": "Elaborate Totem"
+      },
+      {
+        "kind": "item",
+        "id": 24277,
+        "quantity": 250,
+        "name": "Pile of Crystalline Dust"
+      }
+    ]
+  }
+]

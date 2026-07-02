@@ -1,0 +1,6 @@
+"""Stable Guild Wars 2 IDs used by multiple layers."""
+
+COIN_CURRENCY_ID = 1
+GEM_CURRENCY_ID = 4
+SPIRIT_SHARD_CURRENCY_ID = 23
+PROVISIONER_TOKEN_CURRENCY_ID = 29

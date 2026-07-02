@@ -1,0 +1,186 @@
+[
+  {
+    "id": 19677,
+    "kind": "item",
+    "name": "Gift of Exploration",
+    "category": "Legendary gift",
+    "note": "Core map completion gift used by many generation-one legendary weapons.",
+    "tags": ["account_bound", "gift"]
+  },
+  {
+    "id": 19678,
+    "kind": "item",
+    "name": "Gift of Battle",
+    "category": "Legendary gift",
+    "note": "WvW reward-track gift used by many legendary recipes.",
+    "tags": ["account_bound", "gift", "wvw"]
+  },
+  {
+    "id": 19675,
+    "kind": "item",
+    "name": "Mystic Clover",
+    "category": "Legendary material",
+    "tags": ["material"]
+  },
+  {
+    "id": 19976,
+    "kind": "item",
+    "name": "Mystic Coin",
+    "category": "Legendary material",
+    "tags": ["material"]
+  },
+  {
+    "id": 19721,
+    "kind": "item",
+    "name": "Glob of Ectoplasm",
+    "category": "Legendary material",
+    "tags": ["material"]
+  },
+  {
+    "id": 19925,
+    "kind": "item",
+    "name": "Obsidian Shard",
+    "category": "Legendary material",
+    "tags": ["material"]
+  },
+  {
+    "id": 23,
+    "kind": "currency",
+    "name": "Spirit Shard",
+    "category": "Wallet currency",
+    "tags": ["currency"]
+  },
+  {
+    "id": 29,
+    "kind": "currency",
+    "name": "Provisioner Token",
+    "category": "Wallet currency",
+    "tags": ["currency", "account_bound"]
+  },
+  {
+    "id": 104005,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 1",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 103839,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 6",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 104004,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 7",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 103827,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 8",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 103821,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 9",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 103847,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Set 10",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 105331,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Key-Universal",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault"]
+  },
+  {
+    "id": 96054,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Kit-Set 1",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault", "historical"]
+  },
+  {
+    "id": 101123,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Kit-Set 2",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault", "historical"]
+  },
+  {
+    "id": 101623,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Kit-Set 3",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault", "historical"]
+  },
+  {
+    "id": 101938,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Kit-Set 4",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault", "historical"]
+  },
+  {
+    "id": 102946,
+    "kind": "item",
+    "name": "Legendary Weapon Starter Kit-Set 5",
+    "category": "Wizard's Vault starter kit",
+    "tags": ["starter_kit", "wizards_vault", "historical"]
+  },
+  {
+    "id": 29185,
+    "kind": "item",
+    "name": "Dusk",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  },
+  {
+    "id": 29169,
+    "kind": "item",
+    "name": "Dawn",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  },
+  {
+    "id": 29181,
+    "kind": "item",
+    "name": "Zap",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  },
+  {
+    "id": 29180,
+    "kind": "item",
+    "name": "The Legend",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  },
+  {
+    "id": 29175,
+    "kind": "item",
+    "name": "The Hunter",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  },
+  {
+    "id": 29174,
+    "kind": "item",
+    "name": "Chaos Gun",
+    "category": "Legendary precursor",
+    "tags": ["precursor", "generation_1"]
+  }
+]

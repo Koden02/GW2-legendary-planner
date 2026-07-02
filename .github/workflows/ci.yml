@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Python 3.13 checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Pull the exact commit under test.
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Match the project's declared minimum supported Python version.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # setup-uv provides a fast uv install and caches downloaded packages.
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # Keep CI aligned with local development setup.
+      - name: Sync dependencies
+        run: uv sync --dev
+
+      # Ruff catches style, import, and common correctness issues.
+      - name: Lint
+        run: uv run ruff check .
+
+      # Pytest covers library behavior and CLI workflows.
+      - name: Test
+        run: uv run pytest
+
+      # Recipe data should fail CI if ids, outputs, requirements, or graph shape regress.
+      - name: Validate recipe data
+        run: uv run gw2planner recipes validate

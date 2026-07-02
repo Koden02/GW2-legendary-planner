@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Ariadne Example",
+    "race": "Human",
+    "profession": "Guardian",
+    "level": 80,
+    "crafting": [
+      {"discipline": "Armorsmith", "rating": 500, "active": true},
+      {"discipline": "Weaponsmith", "rating": 450, "active": false}
+    ],
+    "bags": [
+      {
+        "id": 8932,
+        "size": 20,
+        "inventory": [
+          {"id": 19925, "count": 50, "binding": "Account"},
+          {"id": 29185, "count": 1}
+        ]
+      }
+    ],
+    "equipment": [
+      {"id": 29181, "count": 1}
+    ]
+  }
+]

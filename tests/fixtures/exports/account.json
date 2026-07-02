@@ -1,0 +1,12 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Example.1234",
+  "world": 1001,
+  "created": "2026-01-01T00:00:00Z",
+  "access": ["GuildWars2", "HeartOfThorns", "PathOfFire"],
+  "commander": true,
+  "fractal_level": 42,
+  "daily_ap": 1000,
+  "monthly_ap": 0,
+  "wvw_rank": 25
+}
