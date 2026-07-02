@@ -1,6 +1,11 @@
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
 from gw2_legendary_planner.planner.recipe_validator import validate_recipes
-from gw2_legendary_planner.planner.recipes import AcquisitionHint, Recipe, RecipeRequirement
+from gw2_legendary_planner.planner.recipes import (
+    AcquisitionHint,
+    Recipe,
+    RecipeMetadata,
+    RecipeRequirement,
+)
 
 
 def test_packaged_recipe_data_validates_cleanly() -> None:
@@ -91,3 +96,21 @@ def test_recipe_validator_reports_bad_acquisition_hints() -> None:
     assert not report.is_valid
     assert "missing_acquisition_label" in codes
     assert "invalid_acquisition_source_url" in codes
+
+
+def test_recipe_validator_reports_bad_recipe_metadata_source_urls() -> None:
+    recipes = [
+        Recipe(
+            id="bad.source",
+            output_id=1,
+            name="Bad Source",
+            metadata=RecipeMetadata(source_urls=["wiki.guildwars2.com/wiki/Bad_Source"]),
+            requirements=[RecipeRequirement(id=2, quantity=1, name="Material")],
+        ),
+    ]
+
+    report = validate_recipes(recipes)
+    codes = {issue.code for issue in report.issues}
+
+    assert not report.is_valid
+    assert "invalid_recipe_source_url" in codes

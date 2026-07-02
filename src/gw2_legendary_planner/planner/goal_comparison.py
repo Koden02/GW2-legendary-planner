@@ -38,6 +38,12 @@ class GoalComparison(BaseModel):
     recipe_name: str
     requested_quantity: int
     tags: list[str] = Field(default_factory=list)
+    generation: str | None = None
+    family: str | None = None
+    expansion: str | None = None
+    weapon_type: str | None = None
+    variant_group: str | None = None
+    source_urls: list[str] = Field(default_factory=list)
     readiness_percent: float
     missing_entry_count: int
     total_missing_quantity: int
@@ -107,6 +113,12 @@ def _build_goal_comparison(
         recipe_name=evaluation.recipe.name,
         requested_quantity=evaluation.requested_quantity,
         tags=evaluation.recipe.tags,
+        generation=evaluation.recipe.metadata.generation,
+        family=evaluation.recipe.metadata.family,
+        expansion=evaluation.recipe.metadata.expansion,
+        weapon_type=evaluation.recipe.metadata.weapon_type,
+        variant_group=evaluation.recipe.metadata.variant_group,
+        source_urls=evaluation.recipe.metadata.source_urls,
         readiness_percent=evaluation.readiness_percent,
         missing_entry_count=len(missing_requirements),
         total_missing_quantity=sum(

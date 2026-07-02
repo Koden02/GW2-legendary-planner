@@ -2703,5 +2703,565 @@
         "name": "Pile of Crystalline Dust"
       }
     ]
+  },
+  {
+    "id": "legendary.aurenes_fang",
+    "output_kind": "item",
+    "output_id": 95675,
+    "output_quantity": 1,
+    "name": "Aurene's Fang",
+    "tags": [
+      "legendary",
+      "generation_3",
+      "weapon",
+      "sword",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "sword",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Aurene%27s_Fang"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 96790,
+        "quantity": 1,
+        "name": "Gift of Aurene's Fang"
+      },
+      {
+        "kind": "item",
+        "id": 95994,
+        "quantity": 1,
+        "name": "Dragon's Fang"
+      },
+      {
+        "kind": "item",
+        "id": 96033,
+        "quantity": 1,
+        "name": "Gift of Jade Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 96137,
+        "quantity": 1,
+        "name": "Draconic Tribute"
+      }
+    ]
+  },
+  {
+    "id": "legendary.aurenes_insight",
+    "output_kind": "item",
+    "output_id": 96652,
+    "output_quantity": 1,
+    "name": "Aurene's Insight",
+    "tags": [
+      "legendary",
+      "generation_3",
+      "weapon",
+      "staff",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "staff",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Aurene%27s_Insight"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 97281,
+        "quantity": 1,
+        "name": "Gift of Aurene's Insight"
+      },
+      {
+        "kind": "item",
+        "id": 95814,
+        "quantity": 1,
+        "name": "Dragon's Insight"
+      },
+      {
+        "kind": "item",
+        "id": 96033,
+        "quantity": 1,
+        "name": "Gift of Jade Mastery"
+      },
+      {
+        "kind": "item",
+        "id": 96137,
+        "quantity": 1,
+        "name": "Draconic Tribute"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.aurenes_fang",
+    "output_kind": "item",
+    "output_id": 96790,
+    "output_quantity": 1,
+    "name": "Gift of Aurene's Fang",
+    "tags": [
+      "gift",
+      "generation_3",
+      "weapon_gift",
+      "mystic_forge",
+      "wiki_verified",
+      "sword",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "sword",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Gift_of_Aurene%27s_Fang"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 97335,
+        "quantity": 1,
+        "name": "Poem on Swords"
+      },
+      {
+        "kind": "item",
+        "id": 79418,
+        "quantity": 100,
+        "name": "Mystic Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Cantha legendary vendor",
+          "note": "Purchased from End of Dragons legendary crafting vendors.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Mystic_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 97655,
+        "quantity": 1,
+        "name": "Gift of Research"
+      },
+      {
+        "kind": "item",
+        "id": 76427,
+        "quantity": 1,
+        "name": "Gift of the Mists"
+      }
+    ]
+  },
+  {
+    "id": "weapon_gift.aurenes_insight",
+    "output_kind": "item",
+    "output_id": 97281,
+    "output_quantity": 1,
+    "name": "Gift of Aurene's Insight",
+    "tags": [
+      "gift",
+      "generation_3",
+      "weapon_gift",
+      "mystic_forge",
+      "wiki_verified",
+      "staff",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "staff",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Gift_of_Aurene%27s_Insight"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 95962,
+        "quantity": 1,
+        "name": "Poem on Staves"
+      },
+      {
+        "kind": "item",
+        "id": 79418,
+        "quantity": 100,
+        "name": "Mystic Runestone",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Cantha legendary vendor",
+          "note": "Purchased from End of Dragons legendary crafting vendors.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Mystic_Runestone"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 97655,
+        "quantity": 1,
+        "name": "Gift of Research"
+      },
+      {
+        "kind": "item",
+        "id": 76427,
+        "quantity": 1,
+        "name": "Gift of the Mists"
+      }
+    ]
+  },
+  {
+    "id": "precursor.dragons_fang",
+    "output_kind": "item",
+    "output_id": 95994,
+    "output_quantity": 1,
+    "name": "Dragon's Fang",
+    "tags": [
+      "precursor",
+      "generation_3",
+      "weapon",
+      "crafting",
+      "api_verified",
+      "sword",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "sword",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Dragon%27s_Fang"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 97006,
+        "quantity": 1,
+        "name": "Fortified Precursor Sword Blade"
+      },
+      {
+        "kind": "item",
+        "id": 97206,
+        "quantity": 1,
+        "name": "Fortified Precursor Sword Hilt"
+      },
+      {
+        "kind": "item",
+        "id": 95913,
+        "quantity": 1,
+        "name": "Transcendent Crystal"
+      },
+      {
+        "kind": "item",
+        "id": 96088,
+        "quantity": 100,
+        "name": "Memory of Aurene"
+      }
+    ]
+  },
+  {
+    "id": "precursor.dragons_insight",
+    "output_kind": "item",
+    "output_id": 95814,
+    "output_quantity": 1,
+    "name": "Dragon's Insight",
+    "tags": [
+      "precursor",
+      "generation_3",
+      "weapon",
+      "crafting",
+      "api_verified",
+      "staff",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "weapon_type": "staff",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Dragon%27s_Insight"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 95970,
+        "quantity": 1,
+        "name": "Fortified Precursor Staff Head"
+      },
+      {
+        "kind": "item",
+        "id": 97408,
+        "quantity": 1,
+        "name": "Fortified Precursor Staff Shaft"
+      },
+      {
+        "kind": "item",
+        "id": 95913,
+        "quantity": 1,
+        "name": "Transcendent Crystal"
+      },
+      {
+        "kind": "item",
+        "id": 96088,
+        "quantity": 100,
+        "name": "Memory of Aurene"
+      }
+    ]
+  },
+  {
+    "id": "gift.jade_mastery",
+    "output_kind": "item",
+    "output_id": 96033,
+    "output_quantity": 1,
+    "name": "Gift of Jade Mastery",
+    "tags": [
+      "gift",
+      "generation_3",
+      "mystic_forge",
+      "wiki_verified",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Gift_of_Jade_Mastery"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 97433,
+        "quantity": 1,
+        "name": "Gift of the Dragon Empire"
+      },
+      {
+        "kind": "item",
+        "id": 20797,
+        "quantity": 1,
+        "name": "Bloodstone Shard",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Mystic Forge vendor",
+          "note": "Purchased from a Mystic Forge vendor for Spirit Shards.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Bloodstone_Shard"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 97096,
+        "quantity": 1,
+        "name": "Gift of Cantha"
+      },
+      {
+        "kind": "item",
+        "id": 96978,
+        "quantity": 100,
+        "name": "Antique Summoning Stone",
+        "acquisition": {
+          "kind": "material",
+          "label": "End of Dragons reward or trade",
+          "note": "Earned from End of Dragons activities or purchased from the Trading Post.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Antique_Summoning_Stone"
+        }
+      }
+    ]
+  },
+  {
+    "id": "gift.cantha",
+    "output_kind": "item",
+    "output_id": 97096,
+    "output_quantity": 1,
+    "name": "Gift of Cantha",
+    "tags": [
+      "gift",
+      "generation_3",
+      "mystic_forge",
+      "wiki_verified",
+      "map_completion",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Gift_of_Cantha"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 96993,
+        "quantity": 1,
+        "name": "Gift of Seitung Province",
+        "acquisition": {
+          "kind": "world_completion",
+          "label": "Seitung Province map completion",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Seitung_Province"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 95621,
+        "quantity": 1,
+        "name": "Gift of New Kaineng City",
+        "acquisition": {
+          "kind": "world_completion",
+          "label": "New Kaineng City map completion",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_New_Kaineng_City"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 97232,
+        "quantity": 1,
+        "name": "Gift of the Echovald Forest",
+        "acquisition": {
+          "kind": "world_completion",
+          "label": "The Echovald Wilds map completion",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_the_Echovald_Forest"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 96083,
+        "quantity": 1,
+        "name": "Gift of Dragon's End",
+        "acquisition": {
+          "kind": "world_completion",
+          "label": "Dragon's End map completion",
+          "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Dragon%27s_End"
+        }
+      }
+    ]
+  },
+  {
+    "id": "gift.dragon_empire",
+    "output_kind": "item",
+    "output_id": 97433,
+    "output_quantity": 1,
+    "name": "Gift of the Dragon Empire",
+    "tags": [
+      "gift",
+      "generation_3",
+      "mystic_forge",
+      "wiki_verified",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Gift_of_the_Dragon_Empire"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 96722,
+        "quantity": 100,
+        "name": "Jade Runestone"
+      },
+      {
+        "kind": "item",
+        "id": 97102,
+        "quantity": 200,
+        "name": "Chunk of Pure Jade"
+      },
+      {
+        "kind": "item",
+        "id": 96347,
+        "quantity": 100,
+        "name": "Chunk of Ancient Ambergris"
+      },
+      {
+        "kind": "item",
+        "id": 97829,
+        "quantity": 5,
+        "name": "Blessing of the Jade Empress",
+        "acquisition": {
+          "kind": "vendor",
+          "label": "Imperial Favor vendor",
+          "source_url": "https://wiki.guildwars2.com/wiki/Blessing_of_the_Jade_Empress"
+        }
+      }
+    ]
+  },
+  {
+    "id": "gift.draconic_tribute",
+    "output_kind": "item",
+    "output_id": 96137,
+    "output_quantity": 1,
+    "name": "Draconic Tribute",
+    "tags": [
+      "gift",
+      "generation_3",
+      "mystic_forge",
+      "wiki_verified",
+      "aurene"
+    ],
+    "metadata": {
+      "generation": "generation_3",
+      "family": "aurene",
+      "expansion": "end_of_dragons",
+      "variant_group": "aurene",
+      "source_urls": [
+        "https://wiki.guildwars2.com/wiki/Draconic_Tribute"
+      ]
+    },
+    "requirements": [
+      {
+        "kind": "item",
+        "id": 70867,
+        "quantity": 1,
+        "name": "Gift of Condensed Might"
+      },
+      {
+        "kind": "item",
+        "id": 76530,
+        "quantity": 1,
+        "name": "Gift of Condensed Magic"
+      },
+      {
+        "kind": "item",
+        "id": 19675,
+        "quantity": 38,
+        "name": "Mystic Clover",
+        "acquisition": {
+          "kind": "mystic_forge",
+          "label": "Mystic Forge or mode rewards",
+          "note": "Commonly acquired from Mystic Forge recipes and selected reward sources.",
+          "source_url": "https://wiki.guildwars2.com/wiki/Mystic_Clover"
+        }
+      },
+      {
+        "kind": "item",
+        "id": 92687,
+        "quantity": 5,
+        "name": "Amalgamated Draconic Lodestone"
+      }
+    ]
   }
 ]

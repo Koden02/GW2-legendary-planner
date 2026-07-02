@@ -80,3 +80,24 @@ def test_goal_comparison_can_include_estimated_price() -> None:
         if requirement.name == "Mystic Clover"
     )
     assert clover.estimated_buy_cost == 8_125
+
+
+def test_goal_comparison_exposes_recipe_metadata() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    inventory = InventoryAggregator().aggregate(snapshot)
+    repository = get_default_recipe_repository()
+    recipe = repository.get_recipe("legendary.aurenes_fang")
+    assert recipe is not None
+    evaluation = RecipeEvaluator(repository).evaluate(recipe, snapshot, inventory)
+
+    report = build_goal_comparison_report(
+        [evaluation],
+        selected_goal_ids=["legendary.aurenes_fang"],
+    )
+
+    goal = report.goals[0]
+    assert goal.generation == "generation_3"
+    assert goal.family == "aurene"
+    assert goal.expansion == "end_of_dragons"
+    assert goal.weapon_type == "sword"
+    assert goal.source_urls == ["https://wiki.guildwars2.com/wiki/Aurene%27s_Fang"]

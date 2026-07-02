@@ -5,6 +5,7 @@ from gw2_legendary_planner.planner.recipes import (
     DependencyNode,
     Goal,
     Recipe,
+    RecipeMetadata,
     RecipeProvider,
     RecipeRepository,
     RecipeRequirement,
@@ -42,3 +43,26 @@ def test_recipe_interface_models_are_data_only_shapes() -> None:
     assert node.child_ids == []
     assert issubclass(RecipeProvider, Protocol)
     assert issubclass(RecipeRepository, Protocol)
+
+
+def test_recipe_metadata_can_be_explicit_or_inferred_from_tags() -> None:
+    explicit = Recipe(
+        id="legendary.aurene_example",
+        output_id=456,
+        name="Aurene Example",
+        tags=["legendary", "generation_3", "weapon", "sword"],
+        metadata=RecipeMetadata(family="aurene", expansion="end_of_dragons"),
+    )
+    inferred = Recipe(
+        id="legendary.gen1_example",
+        output_id=789,
+        name="Generation One Example",
+        tags=["legendary", "generation_1", "weapon", "greatsword"],
+    )
+
+    assert explicit.metadata.generation == "generation_3"
+    assert explicit.metadata.family == "aurene"
+    assert explicit.metadata.weapon_type == "sword"
+    assert inferred.metadata.generation == "generation_1"
+    assert inferred.metadata.family == "generation_1"
+    assert inferred.metadata.weapon_type == "greatsword"

@@ -128,6 +128,19 @@ class RecipeValidator:
                         message=f"Recipe {recipe.id!r} must output at least one item.",
                     )
                 )
+            for source_url in recipe.metadata.source_urls:
+                if not source_url.startswith(("https://", "http://")):
+                    report.issues.append(
+                        RecipeValidationIssue(
+                            severity=RecipeValidationSeverity.ERROR,
+                            code="invalid_recipe_source_url",
+                            recipe_id=recipe.id,
+                            message=(
+                                f"Recipe {recipe.id!r} has an invalid metadata "
+                                f"source URL: {source_url!r}."
+                            ),
+                        )
+                    )
             if not recipe.requirements:
                 report.issues.append(
                     RecipeValidationIssue(

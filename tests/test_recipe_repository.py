@@ -43,7 +43,9 @@ def test_default_recipe_repository_covers_generation_one_top_level_weapons() -> 
 def test_default_recipe_repository_loads_api_verified_shared_recipes() -> None:
     repository = get_default_recipe_repository()
     api_verified = [
-        recipe for recipe in repository.list_recipes() if "api_verified" in recipe.tags
+        recipe
+        for recipe in repository.list_recipes()
+        if "api_verified" in recipe.tags and recipe.metadata.generation == "generation_1"
     ]
     gift_metal = repository.find_recipes_for_output("item", 19621)
 
@@ -60,7 +62,9 @@ def test_default_recipe_repository_loads_api_verified_shared_recipes() -> None:
 def test_default_recipe_repository_loads_wiki_verified_weapon_gifts() -> None:
     repository = get_default_recipe_repository()
     weapon_gifts = [
-        recipe for recipe in repository.list_recipes() if "weapon_gift" in recipe.tags
+        recipe
+        for recipe in repository.list_recipes()
+        if "weapon_gift" in recipe.tags and recipe.metadata.generation == "generation_1"
     ]
     gift_bolt = repository.find_recipes_for_output("item", 19655)
     gift_twilight = repository.find_recipes_for_output("item", 19648)
@@ -99,3 +103,35 @@ def test_default_recipe_repository_loads_acquisition_hints() -> None:
     assert mastery_hints["Gift of Exploration"].kind == "world_completion"
     assert bolt_hints["Icy Runestone"] is not None
     assert bolt_hints["Icy Runestone"].label == "Vendor purchase"
+
+
+def test_default_recipe_repository_loads_generation_three_seed_recipes() -> None:
+    repository = get_default_recipe_repository()
+    aurene_recipes = [
+        recipe
+        for recipe in repository.list_recipes()
+        if recipe.metadata.family == "aurene"
+    ]
+    aurene_fang = repository.get_recipe("legendary.aurenes_fang")
+    aurene_insight = repository.get_recipe("legendary.aurenes_insight")
+    jade_mastery = repository.find_recipes_for_output("item", 96033)
+    draconic_tribute = repository.find_recipes_for_output("item", 96137)
+
+    assert len(aurene_recipes) == 10
+    assert aurene_fang is not None
+    assert aurene_fang.metadata.generation == "generation_3"
+    assert aurene_fang.metadata.expansion == "end_of_dragons"
+    assert aurene_fang.metadata.weapon_type == "sword"
+    assert aurene_insight is not None
+    assert aurene_insight.metadata.weapon_type == "staff"
+    assert jade_mastery[0].id == "gift.jade_mastery"
+    assert draconic_tribute[0].id == "gift.draconic_tribute"
+    assert {
+        requirement.name
+        for requirement in aurene_fang.requirements
+    } == {
+        "Gift of Aurene's Fang",
+        "Dragon's Fang",
+        "Gift of Jade Mastery",
+        "Draconic Tribute",
+    }

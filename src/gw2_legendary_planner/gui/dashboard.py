@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from gw2_legendary_planner import __version__
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.goal_comparison import (
+    GoalComparison,
     GoalComparisonReport,
     GoalRequirementComparison,
 )
@@ -273,6 +274,12 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
             placeholder="Filter goals"
             aria-label="Filter goals"
           >
+          <select id="goal-generation-filter" aria-label="Filter goals by generation">
+            <option value="">All generations</option>
+          </select>
+          <select id="goal-family-filter" aria-label="Filter goals by family">
+            <option value="">All families</option>
+          </select>
         </div>
         {_render_current_goals(payload.goal_comparison_report)}
       </section>
@@ -574,11 +581,24 @@ def _render_current_goals(report: GoalComparisonReport | None) -> str:
     for goal in report.goals:
         is_selected = goal.recipe_id in selected_ids
         checked = " checked" if is_selected else ""
-        search_text = " ".join([goal.recipe_id, goal.recipe_name, *goal.tags]).lower()
+        search_text = " ".join(
+            [
+                goal.recipe_id,
+                goal.recipe_name,
+                goal.generation or "",
+                goal.family or "",
+                goal.expansion or "",
+                goal.weapon_type or "",
+                *goal.tags,
+            ]
+        ).lower()
+        meta_text = _format_goal_metadata(goal)
         picker_rows.append(
             f"""
             <label class="goal-picker-row" data-goal-picker-row
-              data-search="{escape(search_text, quote=True)}">
+              data-search="{escape(search_text, quote=True)}"
+              data-generation="{escape(goal.generation or "", quote=True)}"
+              data-family="{escape(goal.family or "", quote=True)}">
               <input
                 type="checkbox"
                 data-goal-toggle
@@ -588,6 +608,7 @@ def _render_current_goals(report: GoalComparisonReport | None) -> str:
               <span>
                 <strong>{escape(goal.recipe_name)}</strong>
                 <small>{escape(goal.recipe_id)}</small>
+                <em>{escape(meta_text)}</em>
               </span>
               <b>{goal.readiness_percent:.0f}%</b>
             </label>
@@ -895,6 +916,22 @@ def _format_goal_missing_requirements(
     if remaining_count > 0:
         text = f"{text}; {remaining_count:,} more"
     return text
+
+
+def _format_goal_metadata(goal: GoalComparison) -> str:
+    parts = [
+        _display_metadata_value(goal.generation),
+        _display_metadata_value(goal.family),
+        _display_metadata_value(goal.expansion),
+        _display_metadata_value(goal.weapon_type),
+    ]
+    return " / ".join(part for part in parts if part) or "Unclassified"
+
+
+def _display_metadata_value(value: str | None) -> str:
+    if not value:
+        return ""
+    return value.replace("_", " ").title()
 
 
 def _format_contributions(contributions) -> str:
@@ -1306,18 +1343,29 @@ td span {
   align-items: end;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
-input[type="search"] {
+input[type="search"],
+select {
   min-height: 38px;
-  width: min(340px, 100%);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 10px;
   font: inherit;
+  background: #fff;
 }
 
-input[type="search"]:focus {
+input[type="search"] {
+  width: min(340px, 100%);
+}
+
+select {
+  width: min(190px, 100%);
+}
+
+input[type="search"]:focus,
+select:focus {
   border-color: var(--accent);
   outline: 2px solid rgb(27 127 107 / 18%);
 }
@@ -1444,6 +1492,13 @@ input[type="search"]:focus {
 .goal-picker-row small {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.goal-picker-row em {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-style: normal;
 }
 
 .goal-picker-row b {
@@ -1850,6 +1905,8 @@ _DASHBOARD_JS = """
     const pickerRows = Array.from(document.querySelectorAll("[data-goal-picker-row]"));
     const comparisonRows = Array.from(document.querySelectorAll("[data-goal-comparison-row]"));
     const goalFilter = document.querySelector("#goal-filter");
+    const goalGenerationFilter = document.querySelector("#goal-generation-filter");
+    const goalFamilyFilter = document.querySelector("#goal-family-filter");
     const emptyState = document.querySelector("[data-current-goals-empty]");
     const sharedBody = document.querySelector("[data-shared-requirements-body]");
     const selectedCount = document.querySelector("[data-selected-goal-count]");
@@ -1876,6 +1933,33 @@ _DASHBOARD_JS = """
     }
 
     let selectedIds = new Set(readSelectedIds());
+
+    function displayMetadataValue(value) {
+      return String(value || "")
+        .replaceAll("_", " ")
+        .replace(/\\b\\w/g, (letter) => letter.toUpperCase());
+    }
+
+    function populateSelect(select, values) {
+      if (!select) {
+        return;
+      }
+      values.forEach((value) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = displayMetadataValue(value);
+        select.appendChild(option);
+      });
+    }
+
+    populateSelect(
+      goalGenerationFilter,
+      Array.from(new Set(report.goals.map((goal) => goal.generation).filter(Boolean))).sort()
+    );
+    populateSelect(
+      goalFamilyFilter,
+      Array.from(new Set(report.goals.map((goal) => goal.family).filter(Boolean))).sort()
+    );
 
     function selectedGoals() {
       return report.goals.filter((goal) => selectedIds.has(goal.recipe_id));
@@ -1989,15 +2073,31 @@ _DASHBOARD_JS = """
     });
 
     if (goalFilter) {
-      goalFilter.addEventListener("input", () => {
-        const query = goalFilter.value.trim().toLowerCase();
-        pickerRows.forEach((row) => {
-          const haystack = row.getAttribute("data-search") || "";
-          row.hidden = query.length > 0 && !haystack.includes(query);
-        });
+      goalFilter.addEventListener("input", applyGoalFilters);
+    }
+    if (goalGenerationFilter) {
+      goalGenerationFilter.addEventListener("change", applyGoalFilters);
+    }
+    if (goalFamilyFilter) {
+      goalFamilyFilter.addEventListener("change", applyGoalFilters);
+    }
+    function applyGoalFilters() {
+      const query = goalFilter ? goalFilter.value.trim().toLowerCase() : "";
+      const generation = goalGenerationFilter ? goalGenerationFilter.value : "";
+      const family = goalFamilyFilter ? goalFamilyFilter.value : "";
+      pickerRows.forEach((row) => {
+        const haystack = row.getAttribute("data-search") || "";
+        const rowGeneration = row.getAttribute("data-generation") || "";
+        const rowFamily = row.getAttribute("data-family") || "";
+        row.hidden = (
+          (query.length > 0 && !haystack.includes(query))
+          || (generation && rowGeneration !== generation)
+          || (family && rowFamily !== family)
+        );
       });
     }
     applySelection();
+    applyGoalFilters();
   }
 
   setupCurrentGoals();

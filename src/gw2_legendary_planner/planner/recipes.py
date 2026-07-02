@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal, Protocol
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 RequirementKind = Literal["item", "currency", "account_unlock", "achievement", "collection"]
 GoalKind = Literal["item", "currency", "achievement", "collection", "account_unlock"]
@@ -16,6 +16,17 @@ AcquisitionKind = Literal[
     "vendor",
     "world_completion",
 ]
+
+
+class RecipeMetadata(BaseModel):
+    """Optional classification for planner/report surfaces."""
+
+    generation: str | None = None
+    family: str | None = None
+    expansion: str | None = None
+    weapon_type: str | None = None
+    variant_group: str | None = None
+    source_urls: list[str] = Field(default_factory=list)
 
 
 class AcquisitionHint(BaseModel):
@@ -48,6 +59,36 @@ class Recipe(BaseModel):
     name: str
     requirements: list[RecipeRequirement] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    metadata: RecipeMetadata = Field(default_factory=RecipeMetadata)
+
+    @model_validator(mode="after")
+    def infer_metadata_from_tags(self) -> Recipe:
+        if self.metadata.generation is None:
+            self.metadata.generation = next(
+                (tag for tag in self.tags if tag.startswith("generation_")),
+                None,
+            )
+        if self.metadata.family is None and self.metadata.generation is not None:
+            self.metadata.family = self.metadata.generation
+        if self.metadata.weapon_type is None and "weapon" in self.tags:
+            known_tags = {
+                "api_verified",
+                "gift",
+                "legendary",
+                "mystic_forge",
+                "weapon",
+                "weapon_gift",
+                "wiki_verified",
+            }
+            self.metadata.weapon_type = next(
+                (
+                    tag
+                    for tag in self.tags
+                    if tag not in known_tags and not tag.startswith("generation_")
+                ),
+                None,
+            )
+        return self
 
 
 class Goal(BaseModel):

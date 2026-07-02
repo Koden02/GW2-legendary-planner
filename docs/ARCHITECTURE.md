@@ -144,9 +144,12 @@ Recipe work follows this pattern:
 3. Evaluate recipes against `Inventory`, wallet currencies, and account state.
 4. Return planner models that can be rendered by any UI.
 
-The current packaged recipe set is intentionally generation-one focused. It
-exists to validate the engine shape before broader recipe coverage, activity
-planners, market pricing, and recommendation scoring are added.
+The current packaged recipe set includes complete generation-one top-level
+legendary weapon coverage and a small generation-three Aurene seed set. Recipe
+metadata classifies generation, family, expansion, weapon type, variant group,
+and source URLs so dashboard filters and future planners do not need to infer
+those concepts from display names. Broader generation-two and generation-three
+coverage remains data work on top of the same engine.
 
 ## Recipe Engine
 

@@ -7,19 +7,17 @@ subrecipes.
 Current seed recipes:
 
 - all 20 generation-one top-level legendary weapons
-- `legendary.twilight`
-- `legendary.sunrise`
-- `legendary.bolt`
 - all 20 generation-one weapon-specific Mystic Forge gifts
-- `weapon_gift.bolt`
-- `weapon_gift.twilight`
-- `weapon_gift.the_bifrost`
 - API-verified shared crafting recipes such as `gift.metal`, `gift.wood`,
   `gift.energy`, paired gifts, statues, and vials
 - `gift.mastery`
 - `gift.fortune`
 - `gift.might`
 - `gift.magic`
+- generation-three seed coverage for `legendary.aurenes_fang` and
+  `legendary.aurenes_insight`
+- generation-three shared Aurene components for Gift of Jade Mastery, Gift of
+  Cantha, Gift of the Dragon Empire, and Draconic Tribute
 
 Shared source pages used for the initial seed set:
 
@@ -28,9 +26,19 @@ Shared source pages used for the initial seed set:
 - https://wiki.guildwars2.com/wiki/Gift_of_Fortune
 - https://wiki.guildwars2.com/wiki/Gift_of_Might
 - https://wiki.guildwars2.com/wiki/Gift_of_Magic
+- https://wiki.guildwars2.com/wiki/Aurene%27s_Fang
+- https://wiki.guildwars2.com/wiki/Aurene%27s_Insight
+- https://wiki.guildwars2.com/wiki/Gift_of_Jade_Mastery
+- https://wiki.guildwars2.com/wiki/Draconic_Tribute
 
 Generation-one top-level item, precursor, and weapon-gift IDs were verified
 against the GW2 Wiki pages and `/v2/items`.
+
+Generation-three seed item IDs and Mystic Forge template ingredients were
+verified against the GW2 Wiki API page content. This is not complete Gen 3
+coverage yet; it exists to prove the metadata and dashboard filtering model.
+Aurene variant skins should be represented later as unlock or collection goals,
+not as duplicate base legendary weapon recipes.
 
 Shared crafting recipe ingredients were verified against official
 `/v2/recipes/search?output=...` and `/v2/recipes` responses.
@@ -76,6 +84,8 @@ price estimates are an optional report overlay, not recipe data.
 
 - Add recipes as data in `src/gw2_legendary_planner/data/legendary_recipes.json`.
 - Include stable IDs, names, quantities, and tags.
+- Add recipe metadata for new legendary families: `generation`, `family`,
+  `expansion`, `weapon_type`, `variant_group`, and `source_urls` where known.
 - Add acquisition hints for terminal account-bound, vendor, reward-track,
   dungeon, or world-completion requirements when the source is stable and
   source-verifiable.

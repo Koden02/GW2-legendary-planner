@@ -75,6 +75,9 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert "character_inventory (Ariadne Example, bag 0, slot 0)" in html
     assert "legendary.bolt" in html
     assert "Shared Materials" in html
+    assert "goal-generation-filter" in html
+    assert "goal-family-filter" in html
+    assert "Generation 1 / Generation 1 / Sword" in html
 
 
 def test_dashboard_html_renders_live_sync_metadata() -> None:
