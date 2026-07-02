@@ -12,7 +12,8 @@ def test_local_loader_loads_supported_exports() -> None:
     snapshot = LocalExportLoader(FIXTURE_DIR).load()
 
     assert snapshot.account.name == "Example.1234"
-    assert len(snapshot.wallet) == 4
+    assert len(snapshot.wallet) == 5
+    assert snapshot.wallet_value(63) == 1200
     assert len(snapshot.materials) == 2
     assert len(snapshot.bank) == 3
     assert len(snapshot.shared_inventory) == 2

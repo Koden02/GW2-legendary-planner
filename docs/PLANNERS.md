@@ -46,6 +46,44 @@ uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exp
 uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exports --graph
 ```
 
+## Activity Planner Foundation
+
+Phase 3 activity planners live in focused modules under `planner/`. They use
+data definitions and the shared account snapshot/inventory engine.
+
+Current activity commands:
+
+```powershell
+uv run gw2planner activities report --input tests/fixtures/exports
+uv run gw2planner activities report --input tests/fixtures/exports --tag wvw
+uv run gw2planner activities collections --input tests/fixtures/exports --data tests/fixtures/collections/sample_collections.json
+uv run gw2planner activities gift-of-battle --input tests/fixtures/exports
+uv run gw2planner activities gift-of-exploration --input tests/fixtures/exports
+uv run gw2planner activities starter-kits --input tests/fixtures/exports --set 1
+uv run gw2planner activities wizard-vault
+uv run gw2planner activities wizard-vault --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner activities wizard-vault-optimize --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner activities wizard-vault-validate --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner export activities --input tests/fixtures/exports --format csv
+uv run gw2planner export collections --input tests/fixtures/exports --data tests/fixtures/collections/sample_collections.json --format csv
+uv run gw2planner export starter-kits --input tests/fixtures/exports --set 1 --format csv
+uv run gw2planner export wizard-vault --data tests/fixtures/wizards_vault/sample_season.json --format json
+uv run gw2planner export wizard-vault-optimization --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json --format csv
+```
+
+Starter-kit evaluation reuses the recipe evaluator with virtual kit-provided
+items, so recipe requirements stay in one place.
+
+Collection tracking uses data-defined requirement lists and the shared inventory,
+wallet, and legendary armory state. Unsupported future target kinds are reported
+in output rather than hidden.
+
+Wizard's Vault optimizers should reuse this reporting shape but load seasonal
+data from source-verifiable data files or services. The current CLI supports
+external JSON snapshots through `--data` and ranks legendary-relevant rewards
+against the account's Astral Acclaim balance. Do not encode current seasonal
+offerings directly in command handlers.
+
 ## New Planner Checklist
 
 1. Define result models.

@@ -11,7 +11,8 @@ desktop UI, and future automation surfaces should call the same library services
 - `inventory/` flattens account storage into account-wide item quantities and
   location records.
 - `planner/` contains planner-specific data and logic. Legendary focus detection
-  and recipe evaluation live here, not inside the inventory engine.
+  recipe evaluation, and activity readiness live here, not inside the inventory
+  engine.
 - `reports/` adapts domain results to Rich tables, CSV, and JSON.
 - `cache/` provides local API response caching.
 - `config/` reads settings and API key configuration.
@@ -95,6 +96,10 @@ aggregation behavior.
 Legendary focus items are stored in `src/gw2_legendary_planner/data/`.
 Legendary recipes are stored in `src/gw2_legendary_planner/data/` and loaded
 through repository/provider abstractions.
+Legendary activity goals are stored in `src/gw2_legendary_planner/data/` and
+evaluated against the same account snapshot and inventory engine.
+Collection definitions are stored in `src/gw2_legendary_planner/data/` or loaded
+from external JSON files and evaluated against neutral account state.
 
 Recipe work follows this pattern:
 
@@ -124,6 +129,38 @@ Evaluation returns:
 
 The evaluator does not query market prices and does not make recommendations.
 Those belong to later planner phases.
+
+## Activity Planners
+
+Activity planners model account-progress tasks such as reward tracks and world
+completion. The current Phase 3 planner evaluates readiness for Gift of Battle
+and Gift of Exploration by checking inventory quantities and locations.
+
+Activity planners return serializable status models with:
+
+- required quantity
+- available quantity
+- missing quantity
+- readiness percentage
+- action text
+- source URL and tags
+
+Legendary Weapon Starter Kit evaluation is data-backed by a rotation catalog and
+reuses the recipe evaluator with virtual kit-provided items. It does not query
+trading-post prices.
+
+Collection tracking is data-backed. Item, currency, and legendary armory targets
+are evaluated today. Achievement, collection, and account-unlock targets are
+represented as unsupported requirements until the matching account data sources
+exist.
+
+Wizard's Vault optimization is data-backed. It should not hardcode seasonal
+availability in CLI code. Wizard's Vault seasonal reward data lives in
+`src/gw2_legendary_planner/data/wizards_vault_seasons.json` or in external
+source-verified JSON snapshots loaded through the reusable Wizard's Vault data
+service. The optimizer ranks legendary-relevant rewards against the account's
+Astral Acclaim balance. Price-derived value and current-season claims remain
+outside the optimizer until source data services exist for those concerns.
 
 ## Adding New Planners
 

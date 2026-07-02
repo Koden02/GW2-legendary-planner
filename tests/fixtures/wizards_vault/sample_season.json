@@ -1,0 +1,24 @@
+[
+  {
+    "id": "sample-season",
+    "name": "Sample Wizard's Vault Season",
+    "status": "historical",
+    "starts_on": "2026-04-01",
+    "ends_on": "2026-06-30",
+    "source_url": "https://wiki.guildwars2.com/wiki/Wizard%27s_Vault",
+    "last_verified": "2026-07-01",
+    "rewards": [
+      {
+        "id": "legendary-starter-kit",
+        "name": "Legendary Weapon Starter Kit",
+        "reward_kind": "starter_kit",
+        "astral_acclaim_cost": 1000,
+        "purchase_limit": 1,
+        "item_id": 103847,
+        "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+        "last_verified": "2026-07-01",
+        "tags": ["legendary", "starter_kit"]
+      }
+    ]
+  }
+]

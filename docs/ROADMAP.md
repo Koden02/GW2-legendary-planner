@@ -27,13 +27,27 @@ Intentionally deferred: dungeon gift planners, activity optimization,
 trading-post or market pricing, shopping lists, and recommendation scoring.
 Those belong to later phases.
 
-## Phase 3: Legendary Activity Planners
+## Phase 3: Legendary Activity Planners - Complete
 
 - Wizard's Vault optimization.
 - Starter Kit optimizer.
 - Gift of Exploration planner.
 - Gift of Battle planner.
 - Collection tracking.
+
+Current scope: implemented the activity planner model, packaged activity-goal
+definitions, Rich/CSV/JSON reporting, readiness planners for Gift of Battle and
+Gift of Exploration, a Legendary Weapon Starter Kit rotation catalog, and
+account-aware starter-kit set evaluation. Wizard's Vault seasonal reward data
+models, external JSON loading, reporting, validation, and an Astral
+Acclaim-based legendary reward optimizer are also in place, with no current
+seasonal reward claims packaged yet. Collection/checklist tracking is implemented
+for item, currency, and legendary armory targets, with unsupported future target
+kinds reported explicitly.
+
+Deferred scope: Wizard's Vault price-derived value, current-season availability
+automation, achievement endpoint integration, and account-unlock endpoint
+integration remain deferred until source data services exist for those concerns.
 
 ## Phase 4: Account Progression Planning
 

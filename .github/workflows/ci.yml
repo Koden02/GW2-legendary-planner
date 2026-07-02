@@ -46,3 +46,6 @@ jobs:
       # Recipe data should fail CI if ids, outputs, requirements, or graph shape regress.
       - name: Validate recipe data
         run: uv run gw2planner recipes validate
+
+      - name: Validate Wizard's Vault data
+        run: uv run gw2planner activities wizard-vault-validate

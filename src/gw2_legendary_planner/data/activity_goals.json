@@ -1,0 +1,28 @@
+[
+  {
+    "id": "gift_of_battle",
+    "name": "Gift of Battle",
+    "category": "Legendary activity",
+    "activity_kind": "reward_track",
+    "target_kind": "item",
+    "target_id": 19678,
+    "required_quantity": 1,
+    "action": "Complete the WvW Gift of Battle reward track.",
+    "note": "Used by Gift of Mastery for generation-one legendary weapons.",
+    "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Battle",
+    "tags": ["legendary", "generation_1", "wvw", "gift_of_mastery"]
+  },
+  {
+    "id": "gift_of_exploration",
+    "name": "Gift of Exploration",
+    "category": "Legendary activity",
+    "activity_kind": "world_completion",
+    "target_kind": "item",
+    "target_id": 19677,
+    "required_quantity": 1,
+    "action": "Complete Central Tyria world exploration.",
+    "note": "Used by Gift of Mastery for generation-one legendary weapons.",
+    "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Exploration",
+    "tags": ["legendary", "generation_1", "world_completion", "gift_of_mastery"]
+  }
+]

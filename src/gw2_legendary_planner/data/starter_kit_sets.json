@@ -1,0 +1,132 @@
+[
+  {
+    "id": "set_1",
+    "name": "Legendary Weapon Starter Key-Set 1",
+    "set_number": 1,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.meteorlogicus",
+      "legendary.the_bifrost",
+      "legendary.bolt",
+      "legendary.quip"
+    ]
+  },
+  {
+    "id": "set_2",
+    "name": "Legendary Weapon Starter Key-Set 2",
+    "set_number": 2,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.bolt",
+      "legendary.quip",
+      "legendary.the_moot",
+      "legendary.the_predator"
+    ]
+  },
+  {
+    "id": "set_3",
+    "name": "Legendary Weapon Starter Key-Set 3",
+    "set_number": 3,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.the_moot",
+      "legendary.the_predator",
+      "legendary.the_dreamer",
+      "legendary.frostfang"
+    ]
+  },
+  {
+    "id": "set_4",
+    "name": "Legendary Weapon Starter Key-Set 4",
+    "set_number": 4,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.the_dreamer",
+      "legendary.frostfang",
+      "legendary.the_juggernaut",
+      "legendary.incinerator"
+    ]
+  },
+  {
+    "id": "set_5",
+    "name": "Legendary Weapon Starter Key-Set 5",
+    "set_number": 5,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.the_juggernaut",
+      "legendary.incinerator",
+      "legendary.kamohoalii_kotaki",
+      "legendary.twilight"
+    ]
+  },
+  {
+    "id": "set_6",
+    "name": "Legendary Weapon Starter Key-Set 6",
+    "set_number": 6,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.kamohoalii_kotaki",
+      "legendary.twilight",
+      "legendary.howler",
+      "legendary.kudzu"
+    ]
+  },
+  {
+    "id": "set_7",
+    "name": "Legendary Weapon Starter Key-Set 7",
+    "set_number": 7,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.howler",
+      "legendary.kudzu",
+      "legendary.frenzy",
+      "legendary.the_minstrel"
+    ]
+  },
+  {
+    "id": "set_8",
+    "name": "Legendary Weapon Starter Key-Set 8",
+    "set_number": 8,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.frenzy",
+      "legendary.the_minstrel",
+      "legendary.rodgort",
+      "legendary.sunrise"
+    ]
+  },
+  {
+    "id": "set_9",
+    "name": "Legendary Weapon Starter Key-Set 9",
+    "set_number": 9,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.rodgort",
+      "legendary.sunrise",
+      "legendary.kraitkin",
+      "legendary.the_flameseeker_prophecies"
+    ]
+  },
+  {
+    "id": "set_10",
+    "name": "Legendary Weapon Starter Key-Set 10",
+    "set_number": 10,
+    "astral_acclaim_cost": 1000,
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_Weapon_Starter_Kit",
+    "recipe_ids": [
+      "legendary.kraitkin",
+      "legendary.the_flameseeker_prophecies",
+      "legendary.meteorlogicus",
+      "legendary.the_bifrost"
+    ]
+  }
+]

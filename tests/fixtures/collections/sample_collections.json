@@ -1,0 +1,49 @@
+[
+  {
+    "id": "sample-legendary-readiness",
+    "name": "Sample Legendary Readiness Collection",
+    "category": "Legendary checklist",
+    "source_url": "https://wiki.guildwars2.com/wiki/Legendary_weapon",
+    "last_verified": "2026-07-01",
+    "tags": ["legendary", "sample"],
+    "requirements": [
+      {
+        "id": "gift-of-battle",
+        "name": "Gift of Battle",
+        "target_kind": "item",
+        "target_id": 19678,
+        "required_quantity": 1,
+        "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Battle",
+        "tags": ["gift", "wvw"]
+      },
+      {
+        "id": "gift-of-exploration",
+        "name": "Gift of Exploration",
+        "target_kind": "item",
+        "target_id": 19677,
+        "required_quantity": 2,
+        "source_url": "https://wiki.guildwars2.com/wiki/Gift_of_Exploration",
+        "tags": ["gift", "world_completion"]
+      },
+      {
+        "id": "astral-acclaim",
+        "name": "Astral Acclaim",
+        "target_kind": "currency",
+        "target_id": 63,
+        "required_quantity": 1000,
+        "source_url": "https://wiki.guildwars2.com/wiki/Astral_Acclaim",
+        "tags": ["wizard_vault"]
+      },
+      {
+        "id": "unsupported-achievement",
+        "name": "Future Achievement Requirement",
+        "target_kind": "achievement",
+        "target_id": 1,
+        "required_quantity": 1,
+        "note": "Used to document unsupported collection data sources.",
+        "source_url": "https://wiki.guildwars2.com/wiki/Achievement",
+        "tags": ["future"]
+      }
+    ]
+  }
+]

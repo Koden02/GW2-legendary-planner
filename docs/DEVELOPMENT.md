@@ -14,6 +14,7 @@ This project targets Python 3.13+.
 uv run ruff check .
 uv run pytest
 uv run gw2planner recipes validate
+uv run gw2planner activities wizard-vault-validate
 ```
 
 If `uv` is installed but not on PATH in the active shell, use:
@@ -22,6 +23,7 @@ If `uv` is installed but not on PATH in the active shell, use:
 py -3.13 -m uv run ruff check .
 py -3.13 -m uv run pytest
 py -3.13 -m uv run gw2planner recipes validate
+py -3.13 -m uv run gw2planner activities wizard-vault-validate
 ```
 
 ## Continuous Integration
@@ -35,6 +37,7 @@ CI runs on pushes to `main` and on every pull request. The workflow:
 5. Runs `uv run ruff check .`.
 6. Runs `uv run pytest`.
 7. Runs `uv run gw2planner recipes validate`.
+8. Runs `uv run gw2planner activities wizard-vault-validate`.
 
 The workflow file is `.github/workflows/ci.yml`.
 
@@ -50,6 +53,18 @@ uv run gw2planner recipes list --tag generation_1 --tag weapon
 uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exports
 uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exports --missing-only
 uv run gw2planner recipes validate
+uv run gw2planner activities report --input tests/fixtures/exports
+uv run gw2planner activities collections --input tests/fixtures/exports --data tests/fixtures/collections/sample_collections.json
+uv run gw2planner export activities --input tests/fixtures/exports --format csv
+uv run gw2planner export collections --input tests/fixtures/exports --data tests/fixtures/collections/sample_collections.json --format csv
+uv run gw2planner activities starter-kits --input tests/fixtures/exports --set 1
+uv run gw2planner export starter-kits --input tests/fixtures/exports --set 1 --format csv
+uv run gw2planner activities wizard-vault
+uv run gw2planner activities wizard-vault --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner activities wizard-vault-optimize --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner activities wizard-vault-validate --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner export wizard-vault --data tests/fixtures/wizards_vault/sample_season.json --format json
+uv run gw2planner export wizard-vault-optimization --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json --format csv
 uv run gw2planner doctor --input tests/fixtures/exports
 ```
 
@@ -108,3 +123,37 @@ Keep entries small, explicit, and source-verifiable:
 
 Do not add market-price assumptions to recipe data. Price integration belongs to
 a later phase.
+
+## Adding Activity Planner Data
+
+Activity planner definitions live in
+`src/gw2_legendary_planner/data/activity_goals.json`.
+Collection definitions live in
+`src/gw2_legendary_planner/data/collection_goals.json`.
+Starter-kit set definitions live in
+`src/gw2_legendary_planner/data/starter_kit_sets.json`.
+Wizard's Vault seasonal reward definitions live in
+`src/gw2_legendary_planner/data/wizards_vault_seasons.json`.
+External source-verified season snapshots can be loaded with
+`--data ./wizard-vault-season.json` and should use the same schema as packaged
+data.
+
+- use stable item, currency, achievement, collection, or account-unlock IDs
+- include action text that tells the user what activity produces the target
+- include source URLs for human-verifiable data
+- keep seasonal Wizard's Vault availability data separate from planner code
+- add tests for ready and missing account states
+
+Starter-kit evaluation should keep using recipe definitions and virtual
+kit-provided inventory instead of duplicating recipe requirements.
+
+Collection tracking should stay data-defined and source-verifiable. Inventory,
+wallet, and legendary armory targets are supported now. Achievement, collection,
+and account-unlock targets should remain explicit unsupported requirements until
+the matching API loader inputs exist.
+
+Wizard's Vault seasonal data must include source URLs and last-verified dates.
+Current-season data is treated as invalid if it is stale.
+Wizard's Vault optimization uses source-provided reward tags and the account's
+Astral Acclaim wallet balance. Do not add price-derived value claims until the
+market data phase exists.

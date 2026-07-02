@@ -7,6 +7,8 @@ from typer.testing import CliRunner
 from gw2_legendary_planner.cli import app
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "exports"
+COLLECTION_FIXTURE = Path(__file__).parent / "fixtures" / "collections" / "sample_collections.json"
+WIZARD_VAULT_FIXTURE = Path(__file__).parent / "fixtures" / "wizards_vault" / "sample_season.json"
 runner = CliRunner()
 
 
@@ -43,6 +45,112 @@ def test_cli_export_focus_success() -> None:
     assert result.exit_code == 0
     assert "Mystic Clover" in result.output
     assert "Provisioner Token" in result.output
+
+
+def test_cli_export_activities_success() -> None:
+    result = runner.invoke(
+        app,
+        ["export", "activities", "--input", str(FIXTURE_DIR), "--format", "csv"],
+    )
+
+    assert result.exit_code == 0
+    assert "Gift of Battle" in result.output
+    assert "Gift of Exploration" in result.output
+    assert "reward_track" in result.output
+
+
+def test_cli_export_collections_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "collections",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(COLLECTION_FIXTURE),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload[0]["id"] == "sample-legendary-readiness"
+    assert payload[0]["completed_requirements"] == 3
+    assert payload[0]["unsupported_requirements"] == 1
+
+
+def test_cli_export_starter_kits_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "starter-kits",
+            "--input",
+            str(FIXTURE_DIR),
+            "--format",
+            "csv",
+            "--set",
+            "1",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Legendary Weapon Starter Key-Set 1" in result.output
+    assert "Quip" in result.output
+    assert "Gift of Quip" in result.output
+
+
+def test_cli_export_wizard_vault_success() -> None:
+    result = runner.invoke(app, ["export", "wizard-vault", "--format", "json"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.output) == []
+
+
+def test_cli_export_wizard_vault_external_data_csv_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "wizard-vault",
+            "--data",
+            str(WIZARD_VAULT_FIXTURE),
+            "--format",
+            "csv",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Sample Wizard's Vault Season" in result.output
+    assert "Legendary Weapon Starter Kit" in result.output
+    assert "historical" in result.output
+    assert "1000" in result.output
+
+
+def test_cli_export_wizard_vault_optimization_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "wizard-vault-optimization",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(WIZARD_VAULT_FIXTURE),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+
+    assert payload["astral_acclaim_balance"] == 1200
+    assert payload["remaining_astral_acclaim"] == 200
+    assert payload["recommendations"][0]["reward_name"] == "Legendary Weapon Starter Kit"
+    assert payload["recommendations"][0]["recommended_quantity"] == 1
 
 
 def test_cli_doctor_success() -> None:
@@ -239,3 +347,187 @@ def test_cli_recipes_unknown_id_fails() -> None:
 
     assert result.exit_code == 1
     assert "Unknown recipe id" in result.output
+
+
+def test_cli_activities_report_success() -> None:
+    result = runner.invoke(app, ["activities", "report", "--input", str(FIXTURE_DIR)])
+
+    assert result.exit_code == 0
+    assert "Legendary Activity Planners" in result.output
+    assert "Gift of Battle" in result.output
+    assert "Gift of Exploration" in result.output
+
+
+def test_cli_activities_report_tag_filter_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "report",
+            "--input",
+            str(FIXTURE_DIR),
+            "--format",
+            "json",
+            "--tag",
+            "wvw",
+        ],
+    )
+
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert [entry["id"] for entry in payload] == ["gift_of_battle"]
+    assert payload[0]["is_ready"] is True
+
+
+def test_cli_activities_collections_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "collections",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(COLLECTION_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Collection Progress" in result.output
+    assert "Unsupported" in result.output
+
+
+def test_cli_activities_collections_reports_missing_data_file(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "collections",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(tmp_path / "missing.json"),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Collection data failed to load" in result.output
+    assert "does not exist" in result.output
+
+
+def test_cli_activities_gift_of_battle_success() -> None:
+    result = runner.invoke(
+        app,
+        ["activities", "gift-of-battle", "--input", str(FIXTURE_DIR), "--format", "csv"],
+    )
+
+    assert result.exit_code == 0
+    assert "Gift of Battle" in result.output
+    assert "Gift of Exploration" not in result.output
+
+
+def test_cli_activities_starter_kits_success() -> None:
+    result = runner.invoke(
+        app,
+        ["activities", "starter-kits", "--input", str(FIXTURE_DIR), "--set", "1"],
+    )
+
+    assert result.exit_code == 0
+    assert "Legendary Weapon Starter Key-Set 1" in result.output
+    assert "Quip" in result.output
+    assert "Bolt" in result.output
+
+
+def test_cli_activities_starter_kits_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "starter-kits",
+            "--input",
+            str(FIXTURE_DIR),
+            "--set",
+            "1",
+            "--format",
+            "json",
+        ],
+    )
+
+    payload = json.loads(result.output)
+
+    assert result.exit_code == 0
+    assert payload[0]["set_number"] == 1
+    assert payload[0]["options"][0]["legendary_name"] == "Quip"
+    assert payload[0]["options"][0]["readiness_gain_percent"] > 0
+
+
+def test_cli_activities_wizard_vault_success() -> None:
+    result = runner.invoke(app, ["activities", "wizard-vault"])
+
+    assert result.exit_code == 0
+    assert "No Wizard's Vault seasonal reward data is packaged" in result.output
+
+
+def test_cli_activities_wizard_vault_external_data_success() -> None:
+    result = runner.invoke(
+        app,
+        ["activities", "wizard-vault", "--data", str(WIZARD_VAULT_FIXTURE)],
+    )
+
+    assert result.exit_code == 0
+    assert "Wizard's Vault Seasonal Rewards" in result.output
+    assert "historical" in result.output
+    assert "1,000" in result.output
+
+
+def test_cli_activities_wizard_vault_optimize_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "wizard-vault-optimize",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(WIZARD_VAULT_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Wizard's Vault Optimization" in result.output
+    assert "Astral Acclaim" in result.output
+    assert "1,200" in result.output
+
+
+def test_cli_activities_wizard_vault_validate_success() -> None:
+    result = runner.invoke(app, ["activities", "wizard-vault-validate"])
+
+    assert result.exit_code == 0
+    assert "Wizard's Vault data validation passed" in result.output
+
+
+def test_cli_activities_wizard_vault_validate_external_data_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "activities",
+            "wizard-vault-validate",
+            "--data",
+            str(WIZARD_VAULT_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Wizard's Vault data validation passed" in result.output
+
+
+def test_cli_activities_wizard_vault_reports_missing_data_file(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["activities", "wizard-vault", "--data", str(tmp_path / "missing.json")],
+    )
+
+    assert result.exit_code == 1
+    assert "Wizard's Vault data failed to load" in result.output
+    assert "does not exist" in result.output

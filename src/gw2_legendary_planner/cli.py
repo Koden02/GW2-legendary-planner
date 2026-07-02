@@ -16,12 +16,42 @@ from gw2_legendary_planner.config.settings import Settings
 from gw2_legendary_planner.diagnostics import build_doctor_report, render_doctor_report
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
 from gw2_legendary_planner.models.snapshot import AccountSnapshot
+from gw2_legendary_planner.planner.activities import (
+    ActivityGoalStatus,
+    build_activity_report,
+    filter_activity_goals,
+)
+from gw2_legendary_planner.planner.collections import (
+    CollectionDataError,
+    CollectionProgress,
+    evaluate_collections,
+    filter_collections,
+    load_collection_definitions,
+    load_collection_definitions_from_path,
+)
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation, RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
 from gw2_legendary_planner.planner.recipe_validator import validate_recipes
 from gw2_legendary_planner.planner.recipes import Recipe
+from gw2_legendary_planner.planner.starter_kits import (
+    StarterKitSetEvaluation,
+    evaluate_starter_kit_sets,
+)
+from gw2_legendary_planner.planner.wizards_vault import (
+    WizardVaultDataError,
+    WizardVaultOptimizationReport,
+    WizardVaultSeason,
+    WizardVaultValidationReport,
+    filter_wizard_vault_seasons,
+    load_wizard_vault_seasons,
+    load_wizard_vault_seasons_from_path,
+    optimize_wizard_vault_rewards,
+    validate_wizard_vault_seasons,
+)
 from gw2_legendary_planner.reports.exporters import (
+    activity_rows,
+    collection_rows,
     focus_rows,
     inventory_rows,
     model_to_json,
@@ -30,26 +60,38 @@ from gw2_legendary_planner.reports.exporters import (
     recipe_rows,
     recipe_validation_rows,
     rows_to_csv,
+    starter_kit_rows,
     summary_rows,
+    wizard_vault_optimization_rows,
+    wizard_vault_rows,
+    wizard_vault_validation_rows,
     write_csv,
     write_json,
 )
 from gw2_legendary_planner.reports.rich_console import (
     render_account_summary,
+    render_activity_report,
+    render_collection_progress,
     render_focus_report,
     render_recipe_detail,
     render_recipe_evaluation,
     render_recipe_graph,
     render_recipe_list,
     render_recipe_validation_report,
+    render_starter_kit_evaluations,
+    render_wizard_vault_optimization,
+    render_wizard_vault_seasons,
+    render_wizard_vault_validation_report,
 )
 from gw2_legendary_planner.reports.summary import build_account_summary
 
 app = typer.Typer(help="Guild Wars 2 account progression and legendary planner.")
 export_app = typer.Typer(help="Export planner data.")
 recipe_app = typer.Typer(help="Inspect and evaluate data-defined recipes.")
+activity_app = typer.Typer(help="Inspect legendary activity planners.")
 app.add_typer(export_app, name="export")
 app.add_typer(recipe_app, name="recipes")
+app.add_typer(activity_app, name="activities")
 console = Console()
 
 Format = Literal["json", "csv"]
@@ -168,6 +210,167 @@ def export_focus(
     _write_or_print_text(model_to_json(focus_report), output)
 
 
+@export_app.command("activities")
+def export_activities(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    include_ready: Annotated[bool, typer.Option("--include-ready/--missing-only")] = True,
+) -> None:
+    """Export legendary activity planner readiness."""
+
+    statuses = _load_activity_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        include_ready=include_ready,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(activity_rows(statuses), output)
+        return
+    _write_or_print_text(model_to_json(statuses), output)
+
+
+@export_app.command("collections")
+def export_collections(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load collection definitions from a JSON file."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    collections: Annotated[
+        list[str] | None,
+        typer.Option("--collection", help="Filter by collection id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter by collection tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Export data-defined collection progress."""
+
+    progress_entries = _load_collection_progress(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        include_complete=include_complete,
+        collections=collections,
+        tags=tags,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(collection_rows(progress_entries), output)
+        return
+    _write_or_print_text(model_to_json(progress_entries), output)
+
+
+@export_app.command("starter-kits")
+def export_starter_kits(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    set_numbers: Annotated[
+        list[int] | None,
+        typer.Option("--set", min=1, help="Evaluate only specific starter-kit set numbers."),
+    ] = None,
+) -> None:
+    """Export Legendary Weapon Starter Kit evaluations."""
+
+    evaluations = _load_starter_kit_evaluations(
+        api_key=api_key,
+        input_dir=input_dir,
+        set_numbers=set_numbers,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(starter_kit_rows(evaluations), output)
+        return
+    _write_or_print_text(model_to_json(evaluations), output)
+
+
+@export_app.command("wizard-vault")
+def export_wizard_vault(
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--data",
+            help="Load Wizard's Vault seasonal reward data from a JSON file.",
+        ),
+    ] = None,
+    seasons: Annotated[
+        list[str] | None,
+        typer.Option("--season", help="Filter by Wizard's Vault season id."),
+    ] = None,
+    statuses: Annotated[
+        list[str] | None,
+        typer.Option("--status", help="Filter by season status."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter rewards by tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Export Wizard's Vault seasonal reward data."""
+
+    season_data = _load_wizard_vault_seasons(
+        data_path=data_path,
+        seasons=seasons,
+        statuses=statuses,
+        tags=tags,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(wizard_vault_rows(season_data), output)
+        return
+    _write_or_print_text(model_to_json(season_data), output)
+
+
+@export_app.command("wizard-vault-optimization")
+def export_wizard_vault_optimization(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--data",
+            help="Load Wizard's Vault seasonal reward data from a JSON file.",
+        ),
+    ] = None,
+    seasons: Annotated[
+        list[str] | None,
+        typer.Option("--season", help="Filter by Wizard's Vault season id."),
+    ] = None,
+    statuses: Annotated[
+        list[str] | None,
+        typer.Option("--status", help="Filter by season status."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter rewards by tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Export Wizard's Vault reward optimization."""
+
+    report = _load_wizard_vault_optimization(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        seasons=seasons,
+        statuses=statuses,
+        tags=tags,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(wizard_vault_optimization_rows(report), output)
+        return
+    _write_or_print_text(model_to_json(report), output)
+
+
 @recipe_app.command("list")
 def list_recipes(
     output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
@@ -280,6 +483,237 @@ def validate_recipe_data(
         raise typer.Exit(1)
 
 
+@activity_app.command("report")
+def report_activities(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    include_ready: Annotated[bool, typer.Option("--include-ready/--missing-only")] = True,
+    goals: Annotated[
+        list[str] | None,
+        typer.Option("--goal", help="Filter by activity goal id. Repeat for multiple goals."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter by activity tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Evaluate legendary activity readiness against an account."""
+
+    statuses = _load_activity_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        include_ready=include_ready,
+        goals=goals,
+        tags=tags,
+    )
+    _write_activity_statuses(statuses, output_format=output_format, output=output)
+
+
+@activity_app.command("collections")
+def report_collections(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load collection definitions from a JSON file."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    collections: Annotated[
+        list[str] | None,
+        typer.Option("--collection", help="Filter by collection id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter by collection tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Evaluate data-defined collection progress against an account."""
+
+    progress_entries = _load_collection_progress(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        include_complete=include_complete,
+        collections=collections,
+        tags=tags,
+    )
+    _write_collection_progress(
+        progress_entries,
+        output_format=output_format,
+        output=output,
+    )
+
+
+@activity_app.command("gift-of-battle")
+def plan_gift_of_battle(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+) -> None:
+    """Evaluate Gift of Battle readiness."""
+
+    statuses = _load_activity_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        goals=["gift-of-battle"],
+    )
+    _write_activity_statuses(statuses, output_format=output_format, output=output)
+
+
+@activity_app.command("gift-of-exploration")
+def plan_gift_of_exploration(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+) -> None:
+    """Evaluate Gift of Exploration readiness."""
+
+    statuses = _load_activity_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        goals=["gift-of-exploration"],
+    )
+    _write_activity_statuses(statuses, output_format=output_format, output=output)
+
+
+@activity_app.command("starter-kits")
+def plan_starter_kits(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    set_numbers: Annotated[
+        list[int] | None,
+        typer.Option("--set", min=1, help="Evaluate only specific starter-kit set numbers."),
+    ] = None,
+) -> None:
+    """Evaluate Legendary Weapon Starter Kit options against an account."""
+
+    evaluations = _load_starter_kit_evaluations(
+        api_key=api_key,
+        input_dir=input_dir,
+        set_numbers=set_numbers,
+    )
+    _write_starter_kit_evaluations(
+        evaluations,
+        output_format=output_format,
+        output=output,
+    )
+
+
+@activity_app.command("wizard-vault")
+def report_wizard_vault(
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--data",
+            help="Load Wizard's Vault seasonal reward data from a JSON file.",
+        ),
+    ] = None,
+    seasons: Annotated[
+        list[str] | None,
+        typer.Option("--season", help="Filter by Wizard's Vault season id."),
+    ] = None,
+    statuses: Annotated[
+        list[str] | None,
+        typer.Option("--status", help="Filter by season status."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter rewards by tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Inspect Wizard's Vault seasonal reward data."""
+
+    season_data = _load_wizard_vault_seasons(
+        data_path=data_path,
+        seasons=seasons,
+        statuses=statuses,
+        tags=tags,
+    )
+    _write_wizard_vault_seasons(
+        season_data,
+        output_format=output_format,
+        output=output,
+    )
+
+
+@activity_app.command("wizard-vault-optimize")
+def optimize_wizard_vault(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--data",
+            help="Load Wizard's Vault seasonal reward data from a JSON file.",
+        ),
+    ] = None,
+    seasons: Annotated[
+        list[str] | None,
+        typer.Option("--season", help="Filter by Wizard's Vault season id."),
+    ] = None,
+    statuses: Annotated[
+        list[str] | None,
+        typer.Option("--status", help="Filter by season status."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter rewards by tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Rank legendary-relevant Wizard's Vault rewards against an account."""
+
+    report = _load_wizard_vault_optimization(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        seasons=seasons,
+        statuses=statuses,
+        tags=tags,
+    )
+    _write_wizard_vault_optimization(
+        report,
+        output_format=output_format,
+        output=output,
+    )
+
+
+@activity_app.command("wizard-vault-validate")
+def validate_wizard_vault_data(
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--data",
+            help="Load Wizard's Vault seasonal reward data from a JSON file.",
+        ),
+    ] = None,
+) -> None:
+    """Validate Wizard's Vault seasonal reward data."""
+
+    season_data = _load_wizard_vault_seasons(data_path=data_path)
+    report = validate_wizard_vault_seasons(season_data)
+    _write_wizard_vault_validation_report(
+        report,
+        output_format=output_format,
+        output=output,
+    )
+    if not report.is_valid:
+        raise typer.Exit(1)
+
+
 @app.command()
 def doctor(
     input_dir: Annotated[
@@ -355,6 +789,200 @@ def _load_recipe_or_exit(recipe_id: str, repository=None):
     console.print(f"[red]Unknown recipe id:[/red] {recipe_id}")
     console.print("Run `gw2planner recipes list` to see available recipes.")
     raise typer.Exit(1)
+
+
+def _load_activity_statuses(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    include_ready: bool = True,
+    goals: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> list[ActivityGoalStatus]:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    statuses = build_activity_report(snapshot, inventory, include_ready=include_ready)
+    return filter_activity_goals(
+        statuses,
+        goal_ids=set(goals or []),
+        tags=set(tags or []),
+    )
+
+
+def _write_activity_statuses(
+    statuses: list[ActivityGoalStatus],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_activity_report(console, statuses)
+    elif output_format == "csv":
+        _write_or_print_csv(activity_rows(statuses), output)
+    else:
+        _write_or_print_text(model_to_json(statuses), output)
+
+
+def _load_collection_progress(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    data_path: Path | None = None,
+    include_complete: bool = True,
+    collections: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> list[CollectionProgress]:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    try:
+        definitions = (
+            load_collection_definitions_from_path(data_path)
+            if data_path
+            else load_collection_definitions()
+        )
+    except CollectionDataError as exc:
+        console.print(f"[red]Collection data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    progress_entries = evaluate_collections(
+        snapshot,
+        inventory,
+        definitions=definitions,
+        include_complete=include_complete,
+    )
+    return filter_collections(
+        progress_entries,
+        collection_ids=set(collections or []),
+        tags=set(tags or []),
+    )
+
+
+def _write_collection_progress(
+    progress_entries: list[CollectionProgress],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_collection_progress(console, progress_entries)
+    elif output_format == "csv":
+        _write_or_print_csv(collection_rows(progress_entries), output)
+    else:
+        _write_or_print_text(model_to_json(progress_entries), output)
+
+
+def _load_starter_kit_evaluations(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    set_numbers: list[int] | None = None,
+) -> list[StarterKitSetEvaluation]:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    return evaluate_starter_kit_sets(
+        snapshot,
+        inventory,
+        get_default_recipe_repository(),
+        set_numbers=set(set_numbers or []),
+    )
+
+
+def _write_starter_kit_evaluations(
+    evaluations: list[StarterKitSetEvaluation],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_starter_kit_evaluations(console, evaluations)
+    elif output_format == "csv":
+        _write_or_print_csv(starter_kit_rows(evaluations), output)
+    else:
+        _write_or_print_text(model_to_json(evaluations), output)
+
+
+def _load_wizard_vault_seasons(
+    *,
+    data_path: Path | None = None,
+    seasons: list[str] | None = None,
+    statuses: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> list[WizardVaultSeason]:
+    try:
+        season_data = (
+            load_wizard_vault_seasons_from_path(data_path)
+            if data_path
+            else load_wizard_vault_seasons()
+        )
+    except WizardVaultDataError as exc:
+        console.print(f"[red]Wizard's Vault data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return filter_wizard_vault_seasons(
+        season_data,
+        season_ids=set(seasons or []),
+        statuses=set(statuses or []),
+        tags=set(tags or []),
+    )
+
+
+def _load_wizard_vault_optimization(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    data_path: Path | None = None,
+    seasons: list[str] | None = None,
+    statuses: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> WizardVaultOptimizationReport:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    season_data = _load_wizard_vault_seasons(
+        data_path=data_path,
+        seasons=seasons,
+        statuses=statuses,
+        tags=tags,
+    )
+    return optimize_wizard_vault_rewards(snapshot, season_data)
+
+
+def _write_wizard_vault_seasons(
+    seasons: list[WizardVaultSeason],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_wizard_vault_seasons(console, seasons)
+    elif output_format == "csv":
+        _write_or_print_csv(wizard_vault_rows(seasons), output)
+    else:
+        _write_or_print_text(model_to_json(seasons), output)
+
+
+def _write_wizard_vault_optimization(
+    report: WizardVaultOptimizationReport,
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_wizard_vault_optimization(console, report)
+    elif output_format == "csv":
+        _write_or_print_csv(wizard_vault_optimization_rows(report), output)
+    else:
+        _write_or_print_text(model_to_json(report), output)
+
+
+def _write_wizard_vault_validation_report(
+    report: WizardVaultValidationReport,
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_wizard_vault_validation_report(console, report)
+    elif output_format == "csv":
+        _write_or_print_csv(wizard_vault_validation_rows(report), output)
+    else:
+        _write_or_print_text(model_to_json(report), output)
 
 
 def _filter_recipes_by_tags(recipes: list[Recipe], tags: list[str] | None) -> list[Recipe]:

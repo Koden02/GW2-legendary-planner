@@ -11,7 +11,8 @@ and planning engines.
 
 ## Status
 
-Phase 2 is complete. The project currently supports:
+Phase 2 and Phase 3 activity planning are complete. The project
+currently supports:
 
 - Loading account data from local JSON exports or the authenticated Guild Wars 2 API.
 - Flattening account-wide inventory from material storage, bank, shared inventory,
@@ -23,11 +24,19 @@ Phase 2 is complete. The project currently supports:
 - Evaluating all generation-one top-level legendary weapon recipes plus selected
   weapon-gift, shared, and API-verified crafting subrecipes with readiness
   percentage, missing requirements, acquisition hints, and dependency graph output.
+- Evaluating Gift of Battle and Gift of Exploration activity readiness from
+  account inventory.
+- Tracking data-defined collection/checklist progress from account inventory,
+  wallet, and legendary armory data.
+- Evaluating Legendary Weapon Starter Kit sets against account readiness without
+  trading-post price assumptions.
+- Validating, reporting, and optimizing packaged or external Wizard's Vault
+  seasonal reward data.
 - Exporting summary, inventory, focus, and recipe evaluation data as JSON or CSV.
 
-The packaged recipe set is intentionally generation-one focused. Activity
-planners, market pricing, shopping lists, and GUI work are planned for later
-phases.
+The packaged recipe set is intentionally generation-one focused. Market pricing,
+shopping lists, broader account progression scoring, and GUI work are planned
+for later phases.
 
 ## Requirements
 
@@ -55,6 +64,20 @@ uv run gw2planner recipes evaluate legendary.twilight --input ./exports/
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --missing-only
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --graph
 uv run gw2planner recipes validate
+uv run gw2planner activities report --input ./exports/
+uv run gw2planner activities collections --input ./exports/ --data ./collections.json
+uv run gw2planner activities gift-of-battle --input ./exports/
+uv run gw2planner activities gift-of-exploration --input ./exports/
+uv run gw2planner activities starter-kits --input ./exports/ --set 1
+uv run gw2planner activities wizard-vault
+uv run gw2planner activities wizard-vault --data ./wizard-vault-season.json
+uv run gw2planner activities wizard-vault-optimize --input ./exports/ --data ./wizard-vault-season.json
+uv run gw2planner activities wizard-vault-validate --data ./wizard-vault-season.json
+uv run gw2planner export activities --input ./exports/ --format csv
+uv run gw2planner export collections --input ./exports/ --data ./collections.json --format csv
+uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
+uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
+uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
 uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
 ```
@@ -101,4 +124,5 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and
 [docs/PLANNERS.md](docs/PLANNERS.md) for project structure, extension rules, and
 developer workflows. See [docs/RECIPES.md](docs/RECIPES.md) for recipe data
-scope and [docs/ROADMAP.md](docs/ROADMAP.md) for planned phases.
+scope, [docs/ACTIVITIES.md](docs/ACTIVITIES.md) for activity planner scope, and
+[docs/ROADMAP.md](docs/ROADMAP.md) for planned phases.

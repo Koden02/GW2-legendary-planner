@@ -3,10 +3,18 @@ from __future__ import annotations
 from rich.console import Console
 from rich.table import Table
 
+from gw2_legendary_planner.planner.activities import ActivityGoalStatus
+from gw2_legendary_planner.planner.collections import CollectionProgress
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation
 from gw2_legendary_planner.planner.recipe_validator import RecipeValidationReport
 from gw2_legendary_planner.planner.recipes import Recipe
+from gw2_legendary_planner.planner.starter_kits import StarterKitSetEvaluation
+from gw2_legendary_planner.planner.wizards_vault import (
+    WizardVaultOptimizationReport,
+    WizardVaultSeason,
+    WizardVaultValidationReport,
+)
 from gw2_legendary_planner.reports.summary import AccountSummary
 
 
@@ -40,6 +48,26 @@ def render_focus_report(console: Console, entries: list[FocusEntry]) -> None:
     console.print(table)
 
 
+def render_activity_report(console: Console, statuses: list[ActivityGoalStatus]) -> None:
+    table = Table(title="Legendary Activity Planners")
+    table.add_column("Goal", no_wrap=True)
+    table.add_column("Kind")
+    table.add_column("Have", justify="right")
+    table.add_column("Need", justify="right")
+    table.add_column("Ready", justify="right")
+    table.add_column("Action")
+    for status in statuses:
+        table.add_row(
+            status.name,
+            status.activity_kind.replace("_", " "),
+            f"{status.available_quantity:,}",
+            f"{status.required_quantity:,}",
+            f"{status.readiness_percent:.2f}%",
+            status.action,
+        )
+    console.print(table)
+
+
 def render_recipe_list(console: Console, recipes: list[Recipe]) -> None:
     table = Table(title="Legendary Recipes")
     table.add_column("ID", no_wrap=True)
@@ -54,6 +82,182 @@ def render_recipe_list(console: Console, recipes: list[Recipe]) -> None:
             f"{recipe.output_kind}:{recipe.output_id}",
             str(len(recipe.requirements)),
             ", ".join(recipe.tags),
+        )
+    console.print(table)
+
+
+def render_collection_progress(
+    console: Console,
+    progress_entries: list[CollectionProgress],
+) -> None:
+    if not progress_entries:
+        console.print("[yellow]No collection definitions are available.[/yellow]")
+        return
+
+    summary = Table(title="Collection Progress")
+    summary.add_column("Collection")
+    summary.add_column("Ready", justify="right")
+    summary.add_column("Done", justify="right")
+    summary.add_column("Unsupported", justify="right")
+    summary.add_column("Complete")
+    for progress in progress_entries:
+        summary.add_row(
+            progress.name,
+            f"{progress.readiness_percent:.2f}%",
+            f"{progress.completed_requirements}/{progress.total_requirements}",
+            f"{progress.unsupported_requirements:,}",
+            "yes" if progress.is_complete else "no",
+        )
+    console.print(summary)
+
+    details = Table(title="Collection Requirements")
+    details.add_column("Collection")
+    details.add_column("Requirement")
+    details.add_column("Kind")
+    details.add_column("Required", justify="right")
+    details.add_column("Available", justify="right")
+    details.add_column("Missing", justify="right")
+    details.add_column("Supported")
+    for progress in progress_entries:
+        for requirement in progress.requirements:
+            details.add_row(
+                progress.name,
+                requirement.name,
+                requirement.target_kind,
+                f"{requirement.required_quantity:,}",
+                f"{requirement.available_quantity:,}",
+                f"{requirement.missing_quantity:,}",
+                "yes" if requirement.is_supported else "no",
+            )
+    console.print(details)
+
+
+def render_starter_kit_evaluations(
+    console: Console,
+    evaluations: list[StarterKitSetEvaluation],
+) -> None:
+    for evaluation in evaluations:
+        table = Table(title=f"{evaluation.name} ({evaluation.astral_acclaim_cost:,} AA)")
+        table.add_column("Legendary", no_wrap=True)
+        table.add_column("Before", justify="right")
+        table.add_column("After", justify="right")
+        table.add_column("Gain", justify="right")
+        table.add_column("Missing", justify="right")
+        table.add_column("Gift")
+        table.add_column("Covered")
+        for option in evaluation.options:
+            table.add_row(
+                option.legendary_name,
+                f"{option.readiness_before_percent:.2f}%",
+                f"{option.readiness_after_percent:.2f}%",
+                f"{option.readiness_gain_percent:.2f}%",
+                f"{option.missing_before}->{option.missing_after}",
+                option.recommended_gift_choice,
+                ", ".join(option.covered_items),
+            )
+        console.print(table)
+
+
+def render_wizard_vault_seasons(
+    console: Console,
+    seasons: list[WizardVaultSeason],
+) -> None:
+    if not seasons:
+        console.print("[yellow]No Wizard's Vault seasonal reward data is packaged.[/yellow]")
+        return
+
+    table = Table(title="Wizard's Vault Seasonal Rewards")
+    table.add_column("Season")
+    table.add_column("Status")
+    table.add_column("Reward")
+    table.add_column("Kind")
+    table.add_column("AA", justify="right")
+    table.add_column("Limit", justify="right")
+    table.add_column("Verified")
+    for season in seasons:
+        if not season.rewards:
+            table.add_row(
+                season.name,
+                season.status,
+                "No modeled rewards",
+                "-",
+                "-",
+                "-",
+                season.last_verified.isoformat(),
+            )
+            continue
+        for reward in season.rewards:
+            table.add_row(
+                season.name,
+                season.status,
+                reward.name,
+                reward.reward_kind,
+                f"{reward.astral_acclaim_cost:,}",
+                f"{reward.purchase_limit:,}" if reward.purchase_limit else "-",
+                reward.last_verified.isoformat(),
+            )
+    console.print(table)
+
+
+def render_wizard_vault_validation_report(
+    console: Console,
+    report: WizardVaultValidationReport,
+) -> None:
+    if not report.issues:
+        console.print("[green]Wizard's Vault data validation passed.[/green]")
+        return
+
+    table = Table(title="Wizard's Vault Data Validation")
+    table.add_column("Severity")
+    table.add_column("Code")
+    table.add_column("Season")
+    table.add_column("Reward")
+    table.add_column("Message")
+    for issue in report.issues:
+        severity = "[red]error[/red]" if issue.severity == "error" else "[yellow]warning[/yellow]"
+        table.add_row(
+            severity,
+            issue.code,
+            issue.season_id or "-",
+            issue.reward_id or "-",
+            issue.message,
+        )
+    console.print(table)
+
+
+def render_wizard_vault_optimization(
+    console: Console,
+    report: WizardVaultOptimizationReport,
+) -> None:
+    summary = Table(title="Wizard's Vault Optimization")
+    summary.add_column("Metric")
+    summary.add_column("Value", justify="right")
+    summary.add_row("Astral Acclaim", f"{report.astral_acclaim_balance:,}")
+    summary.add_row("Remaining after plan", f"{report.remaining_astral_acclaim:,}")
+    summary.add_row("Recommendations", f"{len(report.recommendations):,}")
+    console.print(summary)
+
+    if not report.recommendations:
+        console.print("[yellow]No legendary-relevant Wizard's Vault rewards found.[/yellow]")
+        return
+
+    table = Table(title="Recommended Rewards")
+    table.add_column("Reward")
+    table.add_column("Season")
+    table.add_column("Cost", justify="right")
+    table.add_column("Score", justify="right")
+    table.add_column("Buy", justify="right")
+    table.add_column("Affordable")
+    table.add_column("Reason")
+    for recommendation in report.recommendations:
+        table.add_row(
+            recommendation.reward_name,
+            recommendation.season_name,
+            f"{recommendation.astral_acclaim_cost:,}",
+            f"{recommendation.priority_score:,}",
+            f"{recommendation.recommended_quantity:,}",
+            "yes" if recommendation.is_affordable else "no",
+            recommendation.reason,
         )
     console.print(table)
 
