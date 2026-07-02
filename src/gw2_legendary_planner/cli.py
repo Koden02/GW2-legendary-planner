@@ -1731,7 +1731,7 @@ def _render_profile_error(exc: ProfileError) -> None:
 
 def _profile_api_source(profile: AccountProfile) -> str:
     if profile.api_key:
-        return "stored key"
+        return profile.api_key
     if profile.api_key_env:
         return f"env:{profile.api_key_env}"
     return "global env fallback"

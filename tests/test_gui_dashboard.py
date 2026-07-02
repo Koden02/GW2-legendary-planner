@@ -151,6 +151,8 @@ def test_api_key_setup_page_explains_memory_only_key() -> None:
     assert "data-api-key-form" in html
     assert "data-api-key-input" in html
     assert "data-remember-api-key" in html
+    assert 'type="text"' in html
+    assert 'type="password"' not in html
 
 
 def test_dashboard_server_default_port_uses_free_port() -> None:

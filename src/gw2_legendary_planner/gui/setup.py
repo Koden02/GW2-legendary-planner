@@ -34,7 +34,7 @@ def render_api_key_setup_html(*, app_name: str = "GW2 Legendary Planner") -> str
           <input
             id="api-key"
             name="api_key"
-            type="password"
+            type="text"
             autocomplete="off"
             spellcheck="false"
             required

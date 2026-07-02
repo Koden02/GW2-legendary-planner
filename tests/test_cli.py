@@ -580,6 +580,25 @@ def test_cli_profiles_add_list_show_and_default(tmp_path: Path) -> None:
     assert str(FIXTURE_DIR) in show_result.output
 
 
+def test_cli_profiles_show_displays_stored_api_key(tmp_path: Path) -> None:
+    profile_file = tmp_path / "profiles.json"
+    env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
+
+    add_result = runner.invoke(
+        app,
+        ["profiles", "add", "live", "--api-key", "visible-key", "--default"],
+        env=env,
+    )
+    list_result = runner.invoke(app, ["profiles", "list"], env=env)
+    show_result = runner.invoke(app, ["profiles", "show", "live"], env=env)
+
+    assert add_result.exit_code == 0
+    assert list_result.exit_code == 0
+    assert "visible-key" in list_result.output
+    assert show_result.exit_code == 0
+    assert "api_key: visible-key" in show_result.output
+
+
 def test_cli_analyze_uses_default_profile_input_dir(tmp_path: Path) -> None:
     profile_file = tmp_path / "profiles.json"
     env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
