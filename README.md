@@ -11,8 +11,8 @@ and planning engines.
 
 ## Status
 
-Phase 2 and Phase 3 activity planning are complete. The project
-currently supports:
+Phase 2, Phase 3 activity planning, and Phase 4 progression planning are
+complete. The project currently supports:
 
 - Loading account data from local JSON exports or the authenticated Guild Wars 2 API.
 - Flattening account-wide inventory from material storage, bank, shared inventory,
@@ -28,15 +28,19 @@ currently supports:
   account inventory.
 - Tracking data-defined collection/checklist progress from account inventory,
   wallet, and legendary armory data.
+- Tracking source-defined daily and weekly task progress from account
+  achievements, wallet, inventory, and manual placeholders.
 - Evaluating Legendary Weapon Starter Kit sets against account readiness without
   trading-post price assumptions.
 - Validating, reporting, and optimizing packaged or external Wizard's Vault
   seasonal reward data.
-- Exporting summary, inventory, focus, and recipe evaluation data as JSON or CSV.
+- Scoring account progression and ranking next-step recommendations from the
+  existing planner outputs.
+- Exporting planner data as JSON or CSV.
 
 The packaged recipe set is intentionally generation-one focused. Market pricing,
-shopping lists, broader account progression scoring, and GUI work are planned
-for later phases.
+shopping lists, live rotating objective feeds, and GUI work are planned for
+later phases.
 
 ## Requirements
 
@@ -73,8 +77,16 @@ uv run gw2planner activities wizard-vault
 uv run gw2planner activities wizard-vault --data ./wizard-vault-season.json
 uv run gw2planner activities wizard-vault-optimize --input ./exports/ --data ./wizard-vault-season.json
 uv run gw2planner activities wizard-vault-validate --data ./wizard-vault-season.json
+uv run gw2planner progress achievements --input ./exports/ --data ./achievements.json
+uv run gw2planner progress dailies --input ./exports/ --data ./recurring.json
+uv run gw2planner progress weeklies --input ./exports/ --data ./recurring.json
+uv run gw2planner progress score --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json
+uv run gw2planner progress recommend --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --wizard-vault-data ./wizard-vault-season.json --starter-kit-set 1
 uv run gw2planner export activities --input ./exports/ --format csv
+uv run gw2planner export achievements --input ./exports/ --data ./achievements.json --format csv
 uv run gw2planner export collections --input ./exports/ --data ./collections.json --format csv
+uv run gw2planner export recurring --input ./exports/ --data ./recurring.json --format csv
+uv run gw2planner export progression --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --format json
 uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
@@ -86,6 +98,7 @@ uv run gw2planner doctor --require-api-key
 
 - `account.json`
 - `account_wallet.json`
+- `account_achievements.json`
 - `account_materials.json`
 - `account_bank.json`
 - `account_inventory.json`

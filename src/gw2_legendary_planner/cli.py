@@ -15,7 +15,16 @@ from gw2_legendary_planner.cache.local import ApiCache
 from gw2_legendary_planner.config.settings import Settings
 from gw2_legendary_planner.diagnostics import build_doctor_report, render_doctor_report
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
+from gw2_legendary_planner.inventory.models import Inventory
 from gw2_legendary_planner.models.snapshot import AccountSnapshot
+from gw2_legendary_planner.planner.achievements import (
+    AchievementDataError,
+    AchievementGoalStatus,
+    build_achievement_report,
+    filter_achievement_goals,
+    load_achievement_goal_definitions,
+    load_achievement_goal_definitions_from_path,
+)
 from gw2_legendary_planner.planner.activities import (
     ActivityGoalStatus,
     build_activity_report,
@@ -30,10 +39,22 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions_from_path,
 )
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
+from gw2_legendary_planner.planner.progression import (
+    AccountProgressionReport,
+    build_account_progression_report,
+)
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation, RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
 from gw2_legendary_planner.planner.recipe_validator import validate_recipes
 from gw2_legendary_planner.planner.recipes import Recipe
+from gw2_legendary_planner.planner.recurring import (
+    RecurringTaskDataError,
+    RecurringTaskStatus,
+    build_recurring_task_report,
+    filter_recurring_tasks,
+    load_recurring_task_definitions,
+    load_recurring_task_definitions_from_path,
+)
 from gw2_legendary_planner.planner.starter_kits import (
     StarterKitSetEvaluation,
     evaluate_starter_kit_sets,
@@ -50,15 +71,19 @@ from gw2_legendary_planner.planner.wizards_vault import (
     validate_wizard_vault_seasons,
 )
 from gw2_legendary_planner.reports.exporters import (
+    achievement_rows,
     activity_rows,
     collection_rows,
     focus_rows,
     inventory_rows,
     model_to_json,
+    progression_report_rows,
+    progression_score_rows,
     recipe_cost_rows,
     recipe_graph_rows,
     recipe_rows,
     recipe_validation_rows,
+    recurring_task_rows,
     rows_to_csv,
     starter_kit_rows,
     summary_rows,
@@ -70,14 +95,18 @@ from gw2_legendary_planner.reports.exporters import (
 )
 from gw2_legendary_planner.reports.rich_console import (
     render_account_summary,
+    render_achievement_report,
     render_activity_report,
     render_collection_progress,
     render_focus_report,
+    render_progression_report,
+    render_progression_score,
     render_recipe_detail,
     render_recipe_evaluation,
     render_recipe_graph,
     render_recipe_list,
     render_recipe_validation_report,
+    render_recurring_task_report,
     render_starter_kit_evaluations,
     render_wizard_vault_optimization,
     render_wizard_vault_seasons,
@@ -89,9 +118,11 @@ app = typer.Typer(help="Guild Wars 2 account progression and legendary planner."
 export_app = typer.Typer(help="Export planner data.")
 recipe_app = typer.Typer(help="Inspect and evaluate data-defined recipes.")
 activity_app = typer.Typer(help="Inspect legendary activity planners.")
+progress_app = typer.Typer(help="Score account progression and recommend next steps.")
 app.add_typer(export_app, name="export")
 app.add_typer(recipe_app, name="recipes")
 app.add_typer(activity_app, name="activities")
+app.add_typer(progress_app, name="progress")
 console = Console()
 
 Format = Literal["json", "csv"]
@@ -231,6 +262,42 @@ def export_activities(
     _write_or_print_text(model_to_json(statuses), output)
 
 
+@export_app.command("achievements")
+def export_achievements(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    goals: Annotated[
+        list[str] | None,
+        typer.Option("--goal", help="Filter by achievement goal id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter by achievement tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Export data-defined achievement progress."""
+
+    statuses = _load_achievement_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        include_complete=include_complete,
+        goals=goals,
+        tags=tags,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(achievement_rows(statuses), output)
+        return
+    _write_or_print_text(model_to_json(statuses), output)
+
+
 @export_app.command("collections")
 def export_collections(
     api_key: Annotated[str | None, typer.Option("--api-key")] = None,
@@ -265,6 +332,96 @@ def export_collections(
         _write_or_print_csv(collection_rows(progress_entries), output)
         return
     _write_or_print_text(model_to_json(progress_entries), output)
+
+
+@export_app.command("progression")
+def export_progression(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    collections_data: Annotated[
+        Path | None,
+        typer.Option("--collections-data", help="Load collection definitions from JSON."),
+    ] = None,
+    achievements_data: Annotated[
+        Path | None,
+        typer.Option("--achievements-data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    recurring_data: Annotated[
+        Path | None,
+        typer.Option("--recurring-data", help="Load daily/weekly task definitions from JSON."),
+    ] = None,
+    wizard_vault_data: Annotated[
+        Path | None,
+        typer.Option("--wizard-vault-data", help="Load Wizard's Vault season data from JSON."),
+    ] = None,
+    starter_kit_sets: Annotated[
+        list[int] | None,
+        typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
+    ] = None,
+    max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
+) -> None:
+    """Export account progression score and recommendations."""
+
+    report = _load_progression_report(
+        api_key=api_key,
+        input_dir=input_dir,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(progression_report_rows(report), output)
+        return
+    _write_or_print_text(model_to_json(report), output)
+
+
+@export_app.command("recurring")
+def export_recurring(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load recurring task definitions from JSON."),
+    ] = None,
+    periods: Annotated[
+        list[str] | None,
+        typer.Option("--period", help="Filter by period: daily or weekly."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    tasks: Annotated[
+        list[str] | None,
+        typer.Option("--task", help="Filter by recurring task id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--tag",
+            help="Filter by recurring task tag. Repeat to require multiple tags.",
+        ),
+    ] = None,
+) -> None:
+    """Export data-defined daily and weekly task progress."""
+
+    statuses = _load_recurring_task_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        periods=periods,
+        include_complete=include_complete,
+        tasks=tasks,
+        tags=tags,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(recurring_task_rows(statuses), output)
+        return
+    _write_or_print_text(model_to_json(statuses), output)
 
 
 @export_app.command("starter-kits")
@@ -714,6 +871,197 @@ def validate_wizard_vault_data(
         raise typer.Exit(1)
 
 
+@progress_app.command("score")
+def progress_score(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    collections_data: Annotated[
+        Path | None,
+        typer.Option("--collections-data", help="Load collection definitions from JSON."),
+    ] = None,
+    achievements_data: Annotated[
+        Path | None,
+        typer.Option("--achievements-data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    recurring_data: Annotated[
+        Path | None,
+        typer.Option("--recurring-data", help="Load daily/weekly task definitions from JSON."),
+    ] = None,
+) -> None:
+    """Score account progression using available planner data."""
+
+    report = _load_progression_report(
+        api_key=api_key,
+        input_dir=input_dir,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+    )
+    if output_format == "rich":
+        render_progression_score(console, report.score)
+    elif output_format == "csv":
+        _write_or_print_csv(progression_score_rows(report.score), output)
+    else:
+        _write_or_print_text(model_to_json(report.score), output)
+
+
+@progress_app.command("achievements")
+def progress_achievements(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    goals: Annotated[
+        list[str] | None,
+        typer.Option("--goal", help="Filter by achievement goal id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Filter by achievement tag. Repeat to require multiple tags."),
+    ] = None,
+) -> None:
+    """Evaluate achievement progress from account achievement exports."""
+
+    statuses = _load_achievement_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        include_complete=include_complete,
+        goals=goals,
+        tags=tags,
+    )
+    _write_achievement_statuses(statuses, output_format=output_format, output=output)
+
+
+@progress_app.command("dailies")
+def progress_dailies(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load recurring task definitions from JSON."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    tasks: Annotated[
+        list[str] | None,
+        typer.Option("--task", help="Filter by recurring task id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--tag",
+            help="Filter by recurring task tag. Repeat to require multiple tags.",
+        ),
+    ] = None,
+) -> None:
+    """Evaluate source-defined daily tasks."""
+
+    statuses = _load_recurring_task_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        periods=["daily"],
+        include_complete=include_complete,
+        tasks=tasks,
+        tags=tags,
+    )
+    _write_recurring_task_statuses(statuses, output_format=output_format, output=output)
+
+
+@progress_app.command("weeklies")
+def progress_weeklies(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    data_path: Annotated[
+        Path | None,
+        typer.Option("--data", help="Load recurring task definitions from JSON."),
+    ] = None,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = True,
+    tasks: Annotated[
+        list[str] | None,
+        typer.Option("--task", help="Filter by recurring task id. Repeat for multiple."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--tag",
+            help="Filter by recurring task tag. Repeat to require multiple tags.",
+        ),
+    ] = None,
+) -> None:
+    """Evaluate source-defined weekly tasks."""
+
+    statuses = _load_recurring_task_statuses(
+        api_key=api_key,
+        input_dir=input_dir,
+        data_path=data_path,
+        periods=["weekly"],
+        include_complete=include_complete,
+        tasks=tasks,
+        tags=tags,
+    )
+    _write_recurring_task_statuses(statuses, output_format=output_format, output=output)
+
+
+@progress_app.command("recommend")
+def progress_recommend(
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    collections_data: Annotated[
+        Path | None,
+        typer.Option("--collections-data", help="Load collection definitions from JSON."),
+    ] = None,
+    achievements_data: Annotated[
+        Path | None,
+        typer.Option("--achievements-data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    recurring_data: Annotated[
+        Path | None,
+        typer.Option("--recurring-data", help="Load daily/weekly task definitions from JSON."),
+    ] = None,
+    wizard_vault_data: Annotated[
+        Path | None,
+        typer.Option("--wizard-vault-data", help="Load Wizard's Vault season data from JSON."),
+    ] = None,
+    starter_kit_sets: Annotated[
+        list[int] | None,
+        typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
+    ] = None,
+    max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
+) -> None:
+    """Recommend the highest-value next account progression steps."""
+
+    report = _load_progression_report(
+        api_key=api_key,
+        input_dir=input_dir,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+    if output_format == "rich":
+        render_progression_report(console, report)
+    elif output_format == "csv":
+        _write_or_print_csv(progression_report_rows(report), output)
+    else:
+        _write_or_print_text(model_to_json(report), output)
+
+
 @app.command()
 def doctor(
     input_dir: Annotated[
@@ -823,6 +1171,83 @@ def _write_activity_statuses(
         _write_or_print_text(model_to_json(statuses), output)
 
 
+def _load_achievement_statuses(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    data_path: Path | None = None,
+    include_complete: bool = True,
+    goals: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> list[AchievementGoalStatus]:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    statuses = _build_achievement_statuses_for_snapshot(
+        snapshot,
+        data_path=data_path,
+        include_complete=include_complete,
+    )
+    return filter_achievement_goals(
+        statuses,
+        goal_ids=set(goals or []),
+        tags=set(tags or []),
+    )
+
+
+def _write_achievement_statuses(
+    statuses: list[AchievementGoalStatus],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_achievement_report(console, statuses)
+    elif output_format == "csv":
+        _write_or_print_csv(achievement_rows(statuses), output)
+    else:
+        _write_or_print_text(model_to_json(statuses), output)
+
+
+def _load_recurring_task_statuses(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    data_path: Path | None = None,
+    periods: list[str] | None = None,
+    include_complete: bool = True,
+    tasks: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> list[RecurringTaskStatus]:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    statuses = _build_recurring_task_statuses_for_snapshot(
+        snapshot,
+        inventory,
+        data_path=data_path,
+        periods=set(periods or []),
+        include_complete=include_complete,
+    )
+    return filter_recurring_tasks(
+        statuses,
+        task_ids=set(tasks or []),
+        periods=set(periods or []),
+        tags=set(tags or []),
+    )
+
+
+def _write_recurring_task_statuses(
+    statuses: list[RecurringTaskStatus],
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_recurring_task_report(console, statuses)
+    elif output_format == "csv":
+        _write_or_print_csv(recurring_task_rows(statuses), output)
+    else:
+        _write_or_print_text(model_to_json(statuses), output)
+
+
 def _load_collection_progress(
     *,
     api_key: str | None,
@@ -868,6 +1293,129 @@ def _write_collection_progress(
         _write_or_print_csv(collection_rows(progress_entries), output)
     else:
         _write_or_print_text(model_to_json(progress_entries), output)
+
+
+def _load_progression_report(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    collections_data: Path | None = None,
+    achievements_data: Path | None = None,
+    recurring_data: Path | None = None,
+    wizard_vault_data: Path | None = None,
+    starter_kit_sets: list[int] | None = None,
+    max_recommendations: int = 10,
+) -> AccountProgressionReport:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    repository = get_default_recipe_repository()
+    activity_statuses = build_activity_report(snapshot, inventory)
+    achievement_statuses = _build_achievement_statuses_for_snapshot(
+        snapshot,
+        data_path=achievements_data,
+    )
+    collection_progress = _build_collection_progress_for_snapshot(
+        snapshot,
+        inventory,
+        data_path=collections_data,
+    )
+    recurring_tasks = _build_recurring_task_statuses_for_snapshot(
+        snapshot,
+        inventory,
+        data_path=recurring_data,
+    )
+    starter_kit_evaluations = (
+        evaluate_starter_kit_sets(
+            snapshot,
+            inventory,
+            repository,
+            set_numbers=set(starter_kit_sets or []),
+        )
+        if starter_kit_sets
+        else []
+    )
+    wizard_vault_report = None
+    if wizard_vault_data:
+        season_data = _load_wizard_vault_seasons(data_path=wizard_vault_data)
+        wizard_vault_report = optimize_wizard_vault_rewards(snapshot, season_data)
+    return build_account_progression_report(
+        snapshot,
+        inventory,
+        repository,
+        achievement_statuses=achievement_statuses,
+        activity_statuses=activity_statuses,
+        collection_progress=collection_progress,
+        recurring_tasks=recurring_tasks,
+        starter_kit_evaluations=starter_kit_evaluations,
+        wizard_vault_report=wizard_vault_report,
+        max_recommendations=max_recommendations,
+    )
+
+
+def _build_collection_progress_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    data_path: Path | None = None,
+) -> list[CollectionProgress]:
+    try:
+        definitions = (
+            load_collection_definitions_from_path(data_path)
+            if data_path
+            else load_collection_definitions()
+        )
+    except CollectionDataError as exc:
+        console.print(f"[red]Collection data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return evaluate_collections(snapshot, inventory, definitions=definitions)
+
+
+def _build_achievement_statuses_for_snapshot(
+    snapshot: AccountSnapshot,
+    *,
+    data_path: Path | None = None,
+    include_complete: bool = True,
+) -> list[AchievementGoalStatus]:
+    try:
+        definitions = (
+            load_achievement_goal_definitions_from_path(data_path)
+            if data_path
+            else load_achievement_goal_definitions()
+        )
+    except AchievementDataError as exc:
+        console.print(f"[red]Achievement data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return build_achievement_report(
+        snapshot,
+        definitions=definitions,
+        include_complete=include_complete,
+    )
+
+
+def _build_recurring_task_statuses_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    data_path: Path | None = None,
+    periods: set[str] | None = None,
+    include_complete: bool = True,
+) -> list[RecurringTaskStatus]:
+    try:
+        definitions = (
+            load_recurring_task_definitions_from_path(data_path)
+            if data_path
+            else load_recurring_task_definitions()
+        )
+    except RecurringTaskDataError as exc:
+        console.print(f"[red]Recurring task data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return build_recurring_task_report(
+        snapshot,
+        inventory,
+        definitions=definitions,
+        periods=periods,
+        include_complete=include_complete,
+    )
 
 
 def _load_starter_kit_evaluations(

@@ -84,6 +84,30 @@ external JSON snapshots through `--data` and ranks legendary-relevant rewards
 against the account's Astral Acclaim balance. Do not encode current seasonal
 offerings directly in command handlers.
 
+## Progression Planner
+
+Phase 4 provides a composition layer in `planner/progression.py`. It reuses
+existing planner outputs and emits a weighted progression score plus ranked
+recommendations.
+
+```powershell
+uv run gw2planner progress achievements --input tests/fixtures/exports --data tests/fixtures/achievements/sample_achievements.json
+uv run gw2planner progress dailies --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress weeklies --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress score --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress recommend --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --wizard-vault-data tests/fixtures/wizards_vault/sample_season.json --starter-kit-set 1
+uv run gw2planner export achievements --input tests/fixtures/exports --data tests/fixtures/achievements/sample_achievements.json --format csv
+uv run gw2planner export recurring --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json --format csv
+uv run gw2planner export progression --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --format json
+```
+
+Recommendation ranking is intentionally source-limited. It can use recipe
+readiness, achievements, activities, collections, recurring daily/weekly tasks,
+starter-kit set evaluations that the caller chooses, and Wizard's Vault season
+data that the caller provides. It does not rank by trading-post value,
+unverified current seasonal availability, or inferred live daily/weekly
+rotations.
+
 ## New Planner Checklist
 
 1. Define result models.

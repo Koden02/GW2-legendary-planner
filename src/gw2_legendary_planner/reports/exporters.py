@@ -10,12 +10,19 @@ from typing import Any
 from pydantic import BaseModel
 
 from gw2_legendary_planner.inventory.models import Inventory
+from gw2_legendary_planner.planner.achievements import AchievementGoalStatus
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.collections import CollectionProgress
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
+from gw2_legendary_planner.planner.progression import (
+    AccountProgressionReport,
+    AccountRecommendation,
+    ProgressionScoreReport,
+)
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation
 from gw2_legendary_planner.planner.recipe_validator import RecipeValidationReport
 from gw2_legendary_planner.planner.recipes import Recipe
+from gw2_legendary_planner.planner.recurring import RecurringTaskStatus
 from gw2_legendary_planner.planner.starter_kits import StarterKitSetEvaluation
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultOptimizationReport,
@@ -118,6 +125,59 @@ def activity_rows(statuses: Iterable[ActivityGoalStatus]) -> list[dict[str, str 
     ]
 
 
+def achievement_rows(
+    statuses: Iterable[AchievementGoalStatus],
+) -> list[dict[str, str | int | float]]:
+    return [
+        {
+            "id": status.id,
+            "name": status.name,
+            "category": status.category,
+            "achievement_id": status.achievement_id,
+            "current_progress": status.current_progress,
+            "required_progress": status.required_progress,
+            "max_progress": status.max_progress or "",
+            "is_done": "yes" if status.is_done else "no",
+            "is_complete": "yes" if status.is_complete else "no",
+            "readiness_percent": status.readiness_percent,
+            "note": status.note or "",
+            "source_url": status.source_url,
+            "tags": ",".join(status.tags),
+        }
+        for status in statuses
+    ]
+
+
+def recurring_task_rows(
+    statuses: Iterable[RecurringTaskStatus],
+) -> list[dict[str, str | int | float]]:
+    return [
+        {
+            "id": status.id,
+            "name": status.name,
+            "period": status.period,
+            "category": status.category,
+            "target_kind": status.target_kind,
+            "target_id": status.target_id or "",
+            "required_quantity": status.required_quantity,
+            "current_progress": status.current_progress,
+            "missing_quantity": status.missing_quantity,
+            "readiness_percent": status.readiness_percent,
+            "is_trackable": "yes" if status.is_trackable else "no",
+            "is_complete": "yes" if status.is_complete else "no",
+            "action": status.action,
+            "locations": "; ".join(
+                _format_location(location.model_dump(exclude_none=True))
+                for location in status.locations
+            ),
+            "note": status.note or "",
+            "source_url": status.source_url,
+            "tags": ",".join(status.tags),
+        }
+        for status in statuses
+    ]
+
+
 def collection_rows(
     progress_entries: Iterable[CollectionProgress],
 ) -> list[dict[str, str | int | float]]:
@@ -179,6 +239,98 @@ def collection_rows(
                     "tags": ",".join([*progress.tags, *requirement.tags]),
                 }
             )
+    return rows
+
+
+def progression_score_rows(
+    score: ProgressionScoreReport,
+) -> list[dict[str, str | int | float]]:
+    return [
+        {
+            "component_id": component.id,
+            "component_name": component.name,
+            "score_percent": component.score_percent,
+            "weight": component.weight,
+            "weighted_score": component.weighted_score,
+            "overall_score_percent": score.overall_score_percent,
+            "detail": component.detail,
+        }
+        for component in score.components
+    ]
+
+
+def recommendation_rows(
+    recommendations: Iterable[AccountRecommendation],
+) -> list[dict[str, str | int | float]]:
+    return [
+        {
+            "id": recommendation.id,
+            "kind": recommendation.kind,
+            "title": recommendation.title,
+            "priority": recommendation.priority,
+            "priority_score": recommendation.priority_score,
+            "action": recommendation.action,
+            "reason": recommendation.reason,
+            "source_id": recommendation.source_id,
+            "readiness_percent": recommendation.readiness_percent or "",
+            "impact_percent": recommendation.impact_percent or "",
+            "source_url": recommendation.source_url or "",
+            "tags": ",".join(recommendation.tags),
+        }
+        for recommendation in recommendations
+    ]
+
+
+def progression_report_rows(
+    report: AccountProgressionReport,
+) -> list[dict[str, str | int | float]]:
+    rows: list[dict[str, str | int | float]] = []
+    for component in report.score.components:
+        rows.append(
+            {
+                "row_type": "score",
+                "id": component.id,
+                "kind": "",
+                "name": component.name,
+                "score_percent": component.score_percent,
+                "priority": "",
+                "priority_score": "",
+                "weight": component.weight,
+                "weighted_score": component.weighted_score,
+                "overall_score_percent": report.score.overall_score_percent,
+                "action": "",
+                "reason": "",
+                "source_id": "",
+                "readiness_percent": "",
+                "impact_percent": "",
+                "source_url": "",
+                "tags": "",
+                "detail": component.detail,
+            }
+        )
+    for recommendation in report.recommendations:
+        rows.append(
+            {
+                "row_type": "recommendation",
+                "id": recommendation.id,
+                "kind": recommendation.kind,
+                "name": recommendation.title,
+                "score_percent": "",
+                "priority": recommendation.priority,
+                "priority_score": recommendation.priority_score,
+                "weight": "",
+                "weighted_score": "",
+                "overall_score_percent": report.score.overall_score_percent,
+                "action": recommendation.action,
+                "reason": recommendation.reason,
+                "source_id": recommendation.source_id,
+                "readiness_percent": recommendation.readiness_percent or "",
+                "impact_percent": recommendation.impact_percent or "",
+                "source_url": recommendation.source_url or "",
+                "tags": ",".join(recommendation.tags),
+                "detail": "",
+            }
+        )
     return rows
 
 

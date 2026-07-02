@@ -31,6 +31,15 @@ class WalletEntry(ApiModel):
     value: int = 0
 
 
+class AccountAchievementEntry(ApiModel):
+    id: int
+    current: int | None = None
+    max: int | None = None
+    done: bool = False
+    bits: list[int] | None = None
+    repeated: int | None = None
+
+
 class ItemStack(ApiModel):
     id: int
     count: int = 1

@@ -46,10 +46,10 @@ for item, currency, and legendary armory targets, with unsupported future target
 kinds reported explicitly.
 
 Deferred scope: Wizard's Vault price-derived value, current-season availability
-automation, achievement endpoint integration, and account-unlock endpoint
+automation, collection endpoint integration, and account-unlock endpoint
 integration remain deferred until source data services exist for those concerns.
 
-## Phase 4: Account Progression Planning
+## Phase 4: Account Progression Planning - Complete
 
 - Achievement planner.
 - Collection planner.
@@ -57,6 +57,17 @@ integration remain deferred until source data services exist for those concerns.
 - Weekly planner.
 - Account progression score.
 - "What should I do next?" recommendation engine.
+
+Completed scope: account achievement export loading, data-defined achievement
+progress reports, data-defined daily and weekly recurring task reports, account
+progression scoring, and the first recommendation engine are implemented as a
+composition layer over recipe readiness, achievement progress, activity
+readiness, collection progress, recurring task progress, optional starter-kit
+evaluations, and optional Wizard's Vault optimization data.
+
+Post-Phase 4 refinement scope: connect richer source-backed achievement,
+collection, daily, and weekly planner inputs. These should stay data-backed and
+should not infer current rotating objectives without verifiable source data.
 
 ## Phase 5: Desktop Application
 

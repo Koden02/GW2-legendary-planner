@@ -7,6 +7,7 @@ def test_api_client_loads_account_snapshot_from_supported_endpoints() -> None:
     payloads = {
         "/v2/account": {"name": "Api.1234"},
         "/v2/account/wallet": [{"id": 1, "value": 10000}],
+        "/v2/account/achievements": [{"id": 1, "done": True}],
         "/v2/account/materials": [{"id": 19976, "count": 1}],
         "/v2/account/bank": [],
         "/v2/account/inventory": [],
@@ -32,6 +33,7 @@ def test_api_client_loads_account_snapshot_from_supported_endpoints() -> None:
 
     assert snapshot.account.name == "Api.1234"
     assert snapshot.wallet_value(1) == 10000
+    assert snapshot.achievement_done(1)
     assert snapshot.materials[0].id == 19976
     assert snapshot.characters[0].name == "Api Character"
     assert seen_paths == list(payloads)

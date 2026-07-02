@@ -109,11 +109,12 @@ Collection definitions support these target kinds today:
 
 - `item`
 - `currency`
+- `achievement`
 - `legendary_armory`
 
-They can also represent future `achievement`, `collection`, and
-`account_unlock` targets. Those requirements are reported as unsupported until
-the matching account data sources exist.
+They can also represent future `collection` and `account_unlock` targets. Those
+requirements are reported as unsupported until the matching account data sources
+exist.
 
 ## Current Limits
 

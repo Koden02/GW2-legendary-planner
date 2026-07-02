@@ -63,8 +63,16 @@ uv run gw2planner activities wizard-vault
 uv run gw2planner activities wizard-vault --data tests/fixtures/wizards_vault/sample_season.json
 uv run gw2planner activities wizard-vault-optimize --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json
 uv run gw2planner activities wizard-vault-validate --data tests/fixtures/wizards_vault/sample_season.json
+uv run gw2planner progress achievements --input tests/fixtures/exports --data tests/fixtures/achievements/sample_achievements.json
+uv run gw2planner progress dailies --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress weeklies --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress score --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json
+uv run gw2planner progress recommend --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --wizard-vault-data tests/fixtures/wizards_vault/sample_season.json --starter-kit-set 1
 uv run gw2planner export wizard-vault --data tests/fixtures/wizards_vault/sample_season.json --format json
 uv run gw2planner export wizard-vault-optimization --input tests/fixtures/exports --data tests/fixtures/wizards_vault/sample_season.json --format csv
+uv run gw2planner export achievements --input tests/fixtures/exports --data tests/fixtures/achievements/sample_achievements.json --format csv
+uv run gw2planner export recurring --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json --format csv
+uv run gw2planner export progression --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --format json
 uv run gw2planner doctor --input tests/fixtures/exports
 ```
 
@@ -82,6 +90,7 @@ The key needs permission for the account endpoints used by this milestone:
 
 - account
 - wallet
+- progression, for account achievements
 - inventories
 - characters
 - unlocks, if future planners add unlock analysis
@@ -157,3 +166,13 @@ Current-season data is treated as invalid if it is stale.
 Wizard's Vault optimization uses source-provided reward tags and the account's
 Astral Acclaim wallet balance. Do not add price-derived value claims until the
 market data phase exists.
+
+## Adding Progression Recommendations
+
+Progression recommendations live in `planner/progression.py`.
+
+- compose existing planner outputs instead of re-implementing their checks
+- keep recommendation reasons explicit and source-limited
+- do not rank by market price until market data services exist
+- require caller-provided data for seasonal or rotating content
+- add tests for score components, ranking, and CLI/export output

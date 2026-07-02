@@ -1,0 +1,41 @@
+[
+  {
+    "id": "sample-daily-achievement",
+    "name": "Sample Daily Achievement",
+    "period": "daily",
+    "category": "Daily fixture",
+    "target_kind": "achievement",
+    "target_id": 1,
+    "required_quantity": 1,
+    "action": "Complete the sample daily achievement.",
+    "source_url": "https://wiki.guildwars2.com/wiki/Daily",
+    "last_verified": "2026-07-01",
+    "tags": ["sample", "daily"]
+  },
+  {
+    "id": "sample-weekly-achievement-progress",
+    "name": "Sample Weekly Achievement Progress",
+    "period": "weekly",
+    "category": "Weekly fixture",
+    "target_kind": "achievement",
+    "target_id": 910,
+    "required_quantity": 5,
+    "action": "Advance the sample weekly achievement.",
+    "source_url": "https://wiki.guildwars2.com/wiki/Weekly",
+    "last_verified": "2026-07-01",
+    "tags": ["sample", "weekly"]
+  },
+  {
+    "id": "sample-weekly-manual",
+    "name": "Sample Manual Weekly Task",
+    "period": "weekly",
+    "category": "Weekly fixture",
+    "target_kind": "manual",
+    "required_quantity": 1,
+    "action": "Review this manually tracked weekly task.",
+    "source_url": "https://wiki.guildwars2.com/wiki/Weekly",
+    "last_verified": "2026-07-01",
+    "note": "Manual tasks document source-backed goals that have no account completion endpoint yet.",
+    "tags": ["sample", "weekly", "manual"]
+  }
+]

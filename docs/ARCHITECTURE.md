@@ -162,6 +162,27 @@ service. The optimizer ranks legendary-relevant rewards against the account's
 Astral Acclaim balance. Price-derived value and current-season claims remain
 outside the optimizer until source data services exist for those concerns.
 
+## Progression Planning
+
+Phase 4 progression planning composes existing planner outputs instead of
+duplicating their logic. `planner/achievements.py` evaluates data-defined
+achievement goals from `/v2/account/achievements`. `planner/recurring.py`
+evaluates source-defined daily and weekly tasks against achievements, wallet
+currencies, inventory items, or explicit manual placeholders. `planner/progression.py`
+consumes recipe readiness, achievement progress, activity readiness, optional
+collection progress, optional recurring task progress, optional starter-kit
+evaluations, and optional Wizard's Vault optimization reports.
+
+The progression layer returns:
+
+- a weighted account progression score
+- score components with explanatory details
+- ranked recommendations for "what should I do next?"
+
+The recommendation engine does not query market prices, live seasonal schedules,
+or infer current daily/weekly objective rotations. Live feeds require dedicated
+source data services before they should affect ranking.
+
 ## Adding New Planners
 
 New planners should live in `planner/` or a planner-specific subpackage. A planner

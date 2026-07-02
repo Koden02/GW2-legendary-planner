@@ -244,6 +244,14 @@ def _available_quantity(
             else []
         )
         return quantity, locations, True
+    if requirement.target_kind == "achievement" and isinstance(requirement.target_id, int):
+        quantity = snapshot.achievement_current(requirement.target_id)
+        locations = (
+            [InventoryLocation(source="achievements", quantity=quantity)]
+            if quantity
+            else []
+        )
+        return quantity, locations, True
     return 0, [], False
 
 

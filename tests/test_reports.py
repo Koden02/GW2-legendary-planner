@@ -3,14 +3,23 @@ from pathlib import Path
 
 from gw2_legendary_planner.api.local import LocalExportLoader
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
+from gw2_legendary_planner.planner.achievements import (
+    build_achievement_report,
+    load_achievement_goal_definitions_from_path,
+)
 from gw2_legendary_planner.planner.activities import build_activity_report
 from gw2_legendary_planner.planner.collections import (
     CollectionDefinition,
     CollectionRequirement,
     evaluate_collections,
 )
+from gw2_legendary_planner.planner.progression import build_account_progression_report
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
+from gw2_legendary_planner.planner.recurring import (
+    build_recurring_task_report,
+    load_recurring_task_definitions_from_path,
+)
 from gw2_legendary_planner.planner.starter_kits import evaluate_starter_kit_sets
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultReward,
@@ -19,11 +28,16 @@ from gw2_legendary_planner.planner.wizards_vault import (
     validate_wizard_vault_seasons,
 )
 from gw2_legendary_planner.reports.exporters import (
+    achievement_rows,
     activity_rows,
     collection_rows,
     focus_rows,
     inventory_rows,
+    progression_report_rows,
+    progression_score_rows,
     recipe_cost_rows,
+    recommendation_rows,
+    recurring_task_rows,
     rows_to_csv,
     starter_kit_rows,
     summary_rows,
@@ -34,6 +48,10 @@ from gw2_legendary_planner.reports.exporters import (
 from gw2_legendary_planner.reports.summary import build_account_summary
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "exports"
+ACHIEVEMENT_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "achievements" / "sample_achievements.json"
+)
+RECURRING_FIXTURE = Path(__file__).parent / "fixtures" / "recurring" / "sample_tasks.json"
 
 
 def test_account_summary_uses_wallet_characters_crafting_and_inventory() -> None:
@@ -99,6 +117,38 @@ def test_activity_rows_are_flat() -> None:
     assert by_id["gift_of_exploration"]["available_quantity"] == 2
 
 
+def test_achievement_rows_are_flat() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    statuses = build_achievement_report(
+        snapshot,
+        definitions=load_achievement_goal_definitions_from_path(ACHIEVEMENT_FIXTURE),
+    )
+
+    rows = achievement_rows(statuses)
+    by_id = {row["id"]: row for row in rows}
+
+    assert by_id["sample-complete-achievement"]["is_complete"] == "yes"
+    assert by_id["sample-partial-achievement"]["current_progress"] == 3
+    assert by_id["sample-partial-achievement"]["readiness_percent"] == 60.0
+
+
+def test_recurring_task_rows_are_flat() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    inventory = InventoryAggregator().aggregate(snapshot)
+    statuses = build_recurring_task_report(
+        snapshot,
+        inventory,
+        definitions=load_recurring_task_definitions_from_path(RECURRING_FIXTURE),
+    )
+
+    rows = recurring_task_rows(statuses)
+    by_id = {row["id"]: row for row in rows}
+
+    assert by_id["sample-daily-achievement"]["period"] == "daily"
+    assert by_id["sample-daily-achievement"]["is_complete"] == "yes"
+    assert by_id["sample-weekly-manual"]["is_trackable"] == "no"
+
+
 def test_collection_rows_are_flat() -> None:
     snapshot = LocalExportLoader(FIXTURE_DIR).load()
     inventory = InventoryAggregator().aggregate(snapshot)
@@ -132,6 +182,25 @@ def test_collection_rows_are_flat() -> None:
     assert rows[0]["requirement_name"] == "Gift of Battle"
     assert rows[0]["is_complete"] == "yes"
     assert rows[0]["locations"] == "bank x1 (slot=0)"
+
+
+def test_progression_rows_are_flat() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    inventory = InventoryAggregator().aggregate(snapshot)
+    report = build_account_progression_report(
+        snapshot,
+        inventory,
+        get_default_recipe_repository(),
+        activity_statuses=build_activity_report(snapshot, inventory),
+    )
+
+    score_rows = progression_score_rows(report.score)
+    recommendation_export_rows = recommendation_rows(report.recommendations)
+    report_rows = progression_report_rows(report)
+
+    assert score_rows[0]["overall_score_percent"] == report.score.overall_score_percent
+    assert recommendation_export_rows[0]["priority"] in {"high", "medium", "low"}
+    assert {row["row_type"] for row in report_rows} == {"score", "recommendation"}
 
 
 def test_starter_kit_rows_are_flat() -> None:

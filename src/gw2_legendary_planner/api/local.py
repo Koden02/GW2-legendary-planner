@@ -13,6 +13,11 @@ from gw2_legendary_planner.models.snapshot import AccountSnapshot
 EXPORT_FILE_ALIASES: dict[str, tuple[str, ...]] = {
     "account": ("account.json", "v2_account.json"),
     "wallet": ("account_wallet.json", "wallet.json", "v2_account_wallet.json"),
+    "achievements": (
+        "account_achievements.json",
+        "achievements.json",
+        "v2_account_achievements.json",
+    ),
     "materials": ("account_materials.json", "materials.json", "v2_account_materials.json"),
     "bank": ("account_bank.json", "bank.json", "v2_account_bank.json"),
     "shared_inventory": (
@@ -34,6 +39,7 @@ REQUIRED_EXPORTS: tuple[str, ...] = tuple(EXPORT_FILE_ALIASES)
 EXPECTED_PAYLOAD_TYPES: dict[str, type] = {
     "account": dict,
     "wallet": list,
+    "achievements": list,
     "materials": list,
     "bank": list,
     "shared_inventory": list,

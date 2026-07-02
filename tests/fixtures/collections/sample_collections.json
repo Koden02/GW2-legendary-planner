@@ -35,13 +35,13 @@
         "tags": ["wizard_vault"]
       },
       {
-        "id": "unsupported-achievement",
-        "name": "Future Achievement Requirement",
-        "target_kind": "achievement",
-        "target_id": 1,
+        "id": "unsupported-account-unlock",
+        "name": "Future Account Unlock Requirement",
+        "target_kind": "account_unlock",
+        "target_id": "future-unlock",
         "required_quantity": 1,
         "note": "Used to document unsupported collection data sources.",
-        "source_url": "https://wiki.guildwars2.com/wiki/Achievement",
+        "source_url": "https://wiki.guildwars2.com/wiki/API:2/account",
         "tags": ["future"]
       }
     ]

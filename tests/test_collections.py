@@ -53,7 +53,7 @@ def test_evaluate_collections_tracks_supported_and_unsupported_requirements() ->
     assert requirements["gift-of-battle"].available_quantity == 1
     assert requirements["gift-of-exploration"].available_quantity == 2
     assert requirements["astral-acclaim"].available_quantity == 1200
-    assert requirements["unsupported-achievement"].is_supported is False
+    assert requirements["unsupported-account-unlock"].is_supported is False
 
 
 def test_filter_collections_selects_by_id_and_tag() -> None:

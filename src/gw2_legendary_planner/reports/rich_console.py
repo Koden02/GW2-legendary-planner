@@ -3,12 +3,19 @@ from __future__ import annotations
 from rich.console import Console
 from rich.table import Table
 
+from gw2_legendary_planner.planner.achievements import AchievementGoalStatus
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.collections import CollectionProgress
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
+from gw2_legendary_planner.planner.progression import (
+    AccountProgressionReport,
+    AccountRecommendation,
+    ProgressionScoreReport,
+)
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation
 from gw2_legendary_planner.planner.recipe_validator import RecipeValidationReport
 from gw2_legendary_planner.planner.recipes import Recipe
+from gw2_legendary_planner.planner.recurring import RecurringTaskStatus
 from gw2_legendary_planner.planner.starter_kits import StarterKitSetEvaluation
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultOptimizationReport,
@@ -63,6 +70,56 @@ def render_activity_report(console: Console, statuses: list[ActivityGoalStatus])
             f"{status.available_quantity:,}",
             f"{status.required_quantity:,}",
             f"{status.readiness_percent:.2f}%",
+            status.action,
+        )
+    console.print(table)
+
+
+def render_achievement_report(
+    console: Console,
+    statuses: list[AchievementGoalStatus],
+) -> None:
+    if not statuses:
+        console.print("[yellow]No achievement definitions are available.[/yellow]")
+        return
+
+    table = Table(title="Achievement Progress")
+    table.add_column("Achievement")
+    table.add_column("Current", justify="right")
+    table.add_column("Required", justify="right")
+    table.add_column("Ready", justify="right")
+    table.add_column("Done")
+    for status in statuses:
+        table.add_row(
+            status.name,
+            f"{status.current_progress:,}",
+            f"{status.required_progress:,}",
+            f"{status.readiness_percent:.2f}%",
+            "yes" if status.is_complete else "no",
+        )
+    console.print(table)
+
+
+def render_recurring_task_report(
+    console: Console,
+    statuses: list[RecurringTaskStatus],
+) -> None:
+    if not statuses:
+        console.print("[yellow]No recurring task definitions are available.[/yellow]")
+        return
+
+    table = Table(title="Recurring Tasks")
+    table.add_column("Task")
+    table.add_column("Period")
+    table.add_column("Ready", justify="right")
+    table.add_column("Trackable")
+    table.add_column("Action")
+    for status in statuses:
+        table.add_row(
+            status.name,
+            status.period,
+            f"{status.readiness_percent:.2f}%",
+            "yes" if status.is_trackable else "manual",
             status.action,
         )
     console.print(table)
@@ -130,6 +187,62 @@ def render_collection_progress(
                 "yes" if requirement.is_supported else "no",
             )
     console.print(details)
+
+
+def render_progression_score(console: Console, score: ProgressionScoreReport) -> None:
+    summary = Table(title="Account Progression Score")
+    summary.add_column("Metric")
+    summary.add_column("Value", justify="right")
+    summary.add_row("Overall", f"{score.overall_score_percent:.2f}%")
+    summary.add_row("Components", f"{len(score.components):,}")
+    console.print(summary)
+
+    table = Table(title="Score Components")
+    table.add_column("Component")
+    table.add_column("Score", justify="right")
+    table.add_column("Weight", justify="right")
+    table.add_column("Detail")
+    for component in score.components:
+        table.add_row(
+            component.name,
+            f"{component.score_percent:.2f}%",
+            f"{component.weight:.2f}",
+            component.detail,
+        )
+    console.print(table)
+
+
+def render_recommendations(
+    console: Console,
+    recommendations: list[AccountRecommendation],
+) -> None:
+    if not recommendations:
+        console.print("[yellow]No recommendations are available.[/yellow]")
+        return
+
+    table = Table(title="What Should I Do Next?")
+    table.add_column("Priority")
+    table.add_column("Recommendation")
+    table.add_column("Kind")
+    table.add_column("Score", justify="right")
+    table.add_column("Action")
+    for recommendation in recommendations:
+        table.add_row(
+            recommendation.priority,
+            recommendation.title,
+            recommendation.kind.replace("_", " "),
+            f"{recommendation.priority_score:.2f}",
+            recommendation.action,
+        )
+    console.print(table)
+
+
+def render_progression_report(
+    console: Console,
+    report: AccountProgressionReport,
+) -> None:
+    render_progression_score(console, report.score)
+    render_recommendations(console, report.recommendations)
 
 
 def render_starter_kit_evaluations(

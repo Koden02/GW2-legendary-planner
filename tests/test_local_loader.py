@@ -14,6 +14,9 @@ def test_local_loader_loads_supported_exports() -> None:
     assert snapshot.account.name == "Example.1234"
     assert len(snapshot.wallet) == 5
     assert snapshot.wallet_value(63) == 1200
+    assert len(snapshot.achievements) == 2
+    assert snapshot.achievement_current(910) == 3
+    assert snapshot.achievement_done(1)
     assert len(snapshot.materials) == 2
     assert len(snapshot.bank) == 3
     assert len(snapshot.shared_inventory) == 2

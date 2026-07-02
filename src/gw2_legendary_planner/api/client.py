@@ -11,6 +11,7 @@ from gw2_legendary_planner.models.snapshot import AccountSnapshot
 ACCOUNT_ENDPOINTS: Mapping[str, str] = {
     "account": "/v2/account",
     "wallet": "/v2/account/wallet",
+    "achievements": "/v2/account/achievements",
     "materials": "/v2/account/materials",
     "bank": "/v2/account/bank",
     "shared_inventory": "/v2/account/inventory",

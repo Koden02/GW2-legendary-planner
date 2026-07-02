@@ -7,7 +7,11 @@ from typer.testing import CliRunner
 from gw2_legendary_planner.cli import app
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "exports"
+ACHIEVEMENT_FIXTURE = (
+    Path(__file__).parent / "fixtures" / "achievements" / "sample_achievements.json"
+)
 COLLECTION_FIXTURE = Path(__file__).parent / "fixtures" / "collections" / "sample_collections.json"
+RECURRING_FIXTURE = Path(__file__).parent / "fixtures" / "recurring" / "sample_tasks.json"
 WIZARD_VAULT_FIXTURE = Path(__file__).parent / "fixtures" / "wizards_vault" / "sample_season.json"
 runner = CliRunner()
 
@@ -59,6 +63,27 @@ def test_cli_export_activities_success() -> None:
     assert "reward_track" in result.output
 
 
+def test_cli_export_achievements_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "achievements",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(ACHIEVEMENT_FIXTURE),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload[0]["id"] == "sample-complete-achievement"
+    assert payload[1]["readiness_percent"] == 60.0
+
+
 def test_cli_export_collections_json_success() -> None:
     result = runner.invoke(
         app,
@@ -79,6 +104,65 @@ def test_cli_export_collections_json_success() -> None:
     assert payload[0]["id"] == "sample-legendary-readiness"
     assert payload[0]["completed_requirements"] == 3
     assert payload[0]["unsupported_requirements"] == 1
+
+
+def test_cli_export_recurring_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "recurring",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(RECURRING_FIXTURE),
+            "--period",
+            "weekly",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert {entry["period"] for entry in payload} == {"weekly"}
+    assert {entry["id"] for entry in payload} == {
+        "sample-weekly-achievement-progress",
+        "sample-weekly-manual",
+    }
+
+
+def test_cli_export_progression_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "progression",
+            "--input",
+            str(FIXTURE_DIR),
+            "--achievements-data",
+            str(ACHIEVEMENT_FIXTURE),
+            "--collections-data",
+            str(COLLECTION_FIXTURE),
+            "--recurring-data",
+            str(RECURRING_FIXTURE),
+            "--wizard-vault-data",
+            str(WIZARD_VAULT_FIXTURE),
+            "--starter-kit-set",
+            "1",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["score"]["overall_score_percent"] > 0
+    assert payload["recommendations"]
+    assert any(
+        component["id"] == "recurring_task_progress"
+        for component in payload["score"]["components"]
+    )
 
 
 def test_cli_export_starter_kits_success() -> None:
@@ -414,6 +498,117 @@ def test_cli_activities_collections_reports_missing_data_file(tmp_path: Path) ->
     assert result.exit_code == 1
     assert "Collection data failed to load" in result.output
     assert "does not exist" in result.output
+
+
+def test_cli_progress_achievements_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "progress",
+            "achievements",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(ACHIEVEMENT_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Achievement Progress" in result.output
+    assert "60.00%" in result.output
+
+
+def test_cli_progress_dailies_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "progress",
+            "dailies",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(RECURRING_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Recurring Tasks" in result.output
+    assert "100.00%" in result.output
+
+
+def test_cli_progress_weeklies_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "progress",
+            "weeklies",
+            "--input",
+            str(FIXTURE_DIR),
+            "--data",
+            str(RECURRING_FIXTURE),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert {entry["period"] for entry in payload} == {"weekly"}
+    assert any(not entry["is_trackable"] for entry in payload)
+
+
+def test_cli_progress_score_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "progress",
+            "score",
+            "--input",
+            str(FIXTURE_DIR),
+            "--achievements-data",
+            str(ACHIEVEMENT_FIXTURE),
+            "--collections-data",
+            str(COLLECTION_FIXTURE),
+            "--recurring-data",
+            str(RECURRING_FIXTURE),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Overall" in result.output
+    assert "Score Components" in result.output
+
+
+def test_cli_progress_recommend_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "progress",
+            "recommend",
+            "--input",
+            str(FIXTURE_DIR),
+            "--achievements-data",
+            str(ACHIEVEMENT_FIXTURE),
+            "--collections-data",
+            str(COLLECTION_FIXTURE),
+            "--wizard-vault-data",
+            str(WIZARD_VAULT_FIXTURE),
+            "--recurring-data",
+            str(RECURRING_FIXTURE),
+            "--starter-kit-set",
+            "1",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    kinds = {recommendation["kind"] for recommendation in payload["recommendations"]}
+    assert "achievement" in kinds
+    assert "weekly" in kinds
+    assert "wizard_vault" in kinds
+    assert "starter_kit" in kinds
 
 
 def test_cli_activities_gift_of_battle_success() -> None:

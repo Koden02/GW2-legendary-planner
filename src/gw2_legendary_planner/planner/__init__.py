@@ -1,3 +1,11 @@
+from gw2_legendary_planner.planner.achievements import (
+    AchievementGoalDefinition,
+    AchievementGoalStatus,
+    build_achievement_report,
+    filter_achievement_goals,
+    load_achievement_goal_definitions,
+    load_achievement_goal_definitions_from_path,
+)
 from gw2_legendary_planner.planner.activities import (
     ActivityGoalDefinition,
     ActivityGoalStatus,
@@ -16,6 +24,13 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions_from_path,
 )
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
+from gw2_legendary_planner.planner.progression import (
+    AccountProgressionReport,
+    AccountRecommendation,
+    ProgressionScoreComponent,
+    ProgressionScoreReport,
+    build_account_progression_report,
+)
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
 from gw2_legendary_planner.planner.recipe_validator import (
@@ -32,6 +47,14 @@ from gw2_legendary_planner.planner.recipes import (
     RecipeProvider,
     RecipeRepository,
     RecipeRequirement,
+)
+from gw2_legendary_planner.planner.recurring import (
+    RecurringTaskDefinition,
+    RecurringTaskStatus,
+    build_recurring_task_report,
+    filter_recurring_tasks,
+    load_recurring_task_definitions,
+    load_recurring_task_definitions_from_path,
 )
 from gw2_legendary_planner.planner.starter_kits import (
     StarterKitOptionEvaluation,
@@ -58,6 +81,10 @@ from gw2_legendary_planner.planner.wizards_vault import (
 
 __all__ = [
     "ASTRAL_ACCLAIM_CURRENCY_ID",
+    "AccountProgressionReport",
+    "AccountRecommendation",
+    "AchievementGoalDefinition",
+    "AchievementGoalStatus",
     "AcquisitionHint",
     "ActivityGoalDefinition",
     "ActivityGoalStatus",
@@ -68,6 +95,8 @@ __all__ = [
     "DependencyGraph",
     "DependencyNode",
     "Goal",
+    "ProgressionScoreComponent",
+    "ProgressionScoreReport",
     "Recipe",
     "RecipeEvaluator",
     "RecipeProvider",
@@ -75,6 +104,8 @@ __all__ = [
     "RecipeRequirement",
     "RecipeValidationReport",
     "RecipeValidator",
+    "RecurringTaskDefinition",
+    "RecurringTaskStatus",
     "StarterKitOptionEvaluation",
     "StarterKitSet",
     "StarterKitSetEvaluation",
@@ -84,18 +115,27 @@ __all__ = [
     "WizardVaultSeason",
     "WizardVaultValidationReport",
     "WizardVaultValidator",
+    "build_account_progression_report",
+    "build_achievement_report",
     "build_activity_report",
     "build_legendary_focus_report",
+    "build_recurring_task_report",
     "evaluate_collections",
     "evaluate_starter_kit_set",
     "evaluate_starter_kit_sets",
+    "filter_achievement_goals",
     "filter_activity_goals",
     "filter_collections",
+    "filter_recurring_tasks",
     "filter_wizard_vault_seasons",
     "get_default_recipe_repository",
+    "load_achievement_goal_definitions",
+    "load_achievement_goal_definitions_from_path",
     "load_activity_goal_definitions",
     "load_collection_definitions",
     "load_collection_definitions_from_path",
+    "load_recurring_task_definitions",
+    "load_recurring_task_definitions_from_path",
     "load_starter_kit_sets",
     "load_wizard_vault_seasons",
     "load_wizard_vault_seasons_from_path",

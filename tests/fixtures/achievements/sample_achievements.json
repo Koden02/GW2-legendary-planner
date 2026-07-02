@@ -1,0 +1,23 @@
+[
+  {
+    "id": "sample-complete-achievement",
+    "name": "Sample Complete Achievement",
+    "category": "Achievement planner fixture",
+    "achievement_id": 1,
+    "required_progress": 1,
+    "require_done": true,
+    "source_url": "https://wiki.guildwars2.com/wiki/Achievement",
+    "last_verified": "2026-07-01",
+    "tags": ["sample", "complete"]
+  },
+  {
+    "id": "sample-partial-achievement",
+    "name": "Sample Partial Achievement",
+    "category": "Achievement planner fixture",
+    "achievement_id": 910,
+    "required_progress": 5,
+    "source_url": "https://wiki.guildwars2.com/wiki/Achievement",
+    "last_verified": "2026-07-01",
+    "tags": ["sample", "partial"]
+  }
+]
