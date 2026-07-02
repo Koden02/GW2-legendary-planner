@@ -142,33 +142,76 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
           <h1>{escape(payload.account_name)}</h1>
         </div>
       </div>
-      <div class="run-meta">
-        <span>{escape(payload.source_label)}</span>
-        <span>{escape(_format_datetime(payload.generated_at))}</span>
-      </div>
+      {_render_run_meta(payload)}
     </header>
     {_render_sync_status(payload.sync_status)}
 
-    <nav class="tabs" aria-label="Dashboard views">
-      <button class="tab is-active" type="button" data-panel-target="overview">
+    <nav class="tabs" aria-label="Dashboard views" role="tablist">
+      <button
+        id="tab-overview"
+        class="tab is-active"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="panel-overview"
+        data-panel-target="overview"
+      >
         Overview
       </button>
-      <button class="tab" type="button" data-panel-target="recommendations">
+      <button
+        id="tab-recommendations"
+        class="tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-recommendations"
+        data-panel-target="recommendations"
+      >
         Recommendations
       </button>
-      <button class="tab" type="button" data-panel-target="shopping-list">
+      <button
+        id="tab-shopping-list"
+        class="tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-shopping-list"
+        data-panel-target="shopping-list"
+      >
         Shopping List
       </button>
-      <button class="tab" type="button" data-panel-target="materials">
+      <button
+        id="tab-materials"
+        class="tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-materials"
+        data-panel-target="materials"
+      >
         Materials
       </button>
-      <button class="tab" type="button" data-panel-target="activities">
+      <button
+        id="tab-activities"
+        class="tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-activities"
+        data-panel-target="activities"
+      >
         Activities
       </button>
     </nav>
 
     <main>
-      <section class="panel is-active" data-panel="overview">
+      <section
+        id="panel-overview"
+        class="panel is-active"
+        data-panel="overview"
+        role="tabpanel"
+        aria-labelledby="tab-overview"
+      >
         <div class="overview-grid">
           <section class="score-band" aria-label="Account progression score">
             <div class="score-ring" style="{score_style}">
@@ -193,7 +236,14 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         </section>
       </section>
 
-      <section class="panel" data-panel="recommendations">
+      <section
+        id="panel-recommendations"
+        class="panel"
+        data-panel="recommendations"
+        role="tabpanel"
+        aria-labelledby="tab-recommendations"
+        hidden
+      >
         <div class="section-heading row-heading">
           <div>
             <p class="eyebrow">Recommendation Engine</p>
@@ -209,7 +259,14 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         {_render_recommendations(payload.recommendations)}
       </section>
 
-      <section class="panel" data-panel="shopping-list">
+      <section
+        id="panel-shopping-list"
+        class="panel"
+        data-panel="shopping-list"
+        role="tabpanel"
+        aria-labelledby="tab-shopping-list"
+        hidden
+      >
         <div class="section-heading">
           <p class="eyebrow">Crafting Targets</p>
           <h2>Shopping List</h2>
@@ -217,7 +274,14 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         {_render_shopping_list(payload.shopping_list, payload.shopping_list_prices)}
       </section>
 
-      <section class="panel" data-panel="materials">
+      <section
+        id="panel-materials"
+        class="panel"
+        data-panel="materials"
+        role="tabpanel"
+        aria-labelledby="tab-materials"
+        hidden
+      >
         <div class="section-heading">
           <p class="eyebrow">Legendary Focus</p>
           <h2>Important Materials</h2>
@@ -225,7 +289,14 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         {_render_focus_items(payload.focus_items)}
       </section>
 
-      <section class="panel" data-panel="activities">
+      <section
+        id="panel-activities"
+        class="panel"
+        data-panel="activities"
+        role="tabpanel"
+        aria-labelledby="tab-activities"
+        hidden
+      >
         <div class="section-heading">
           <p class="eyebrow">Activity Planners</p>
           <h2>Tracked Account Work</h2>
@@ -284,6 +355,25 @@ def _summary_metrics(summary: AccountSummary) -> list[DashboardMetric]:
             detail=f"{summary.unique_item_count:,} unique",
         ),
     ]
+
+
+def _render_run_meta(payload: DashboardPayload) -> str:
+    return f"""
+      <div class="run-meta" data-run-meta>
+        <span class="meta-chip">
+          <b>Source</b>
+          <strong>{escape(payload.source_label)}</strong>
+        </span>
+        <span class="meta-chip">
+          <b>Generated</b>
+          <strong>{escape(_format_datetime(payload.generated_at))}</strong>
+        </span>
+        <span class="meta-chip">
+          <b>Version</b>
+          <strong>{escape(payload.app_version)}</strong>
+        </span>
+      </div>
+    """
 
 
 def _render_sync_status(status: DashboardSyncStatus) -> str:
@@ -345,7 +435,7 @@ def _render_sync_status(status: DashboardSyncStatus) -> str:
 
 def _render_metrics(metrics: list[DashboardMetric]) -> str:
     if not metrics:
-        return _empty_state("No summary metrics are available.")
+        return _empty_state("No account summary metrics are available.")
     return "\n".join(
         f"""
             <article class="metric-card tone-{escape(metric.tone)}">
@@ -360,7 +450,7 @@ def _render_metrics(metrics: list[DashboardMetric]) -> str:
 
 def _render_score_components(components: list[ProgressionScoreComponent]) -> str:
     if not components:
-        return _empty_state("No score components are available.")
+        return _empty_state("No score component data is available.")
     rows = []
     for component in components:
         width = max(min(component.score_percent, 100), 0)
@@ -383,7 +473,7 @@ def _render_score_components(components: list[ProgressionScoreComponent]) -> str
 
 def _render_recommendations(recommendations: list[AccountRecommendation]) -> str:
     if not recommendations:
-        return _empty_state("No recommendations are available.")
+        return _empty_state("No recommendations are available for this snapshot.")
     rows = []
     for recommendation in recommendations:
         search_text = " ".join(
@@ -428,6 +518,9 @@ def _render_recommendations(recommendations: list[AccountRecommendation]) -> str
             </tbody>
           </table>
         </div>
+        <div class="empty-state filter-empty" data-recommendation-empty hidden>
+          <strong>No recommendations match this filter.</strong>
+        </div>
     """
 
 
@@ -436,9 +529,9 @@ def _render_shopping_list(
     price_report: ShoppingListPriceReport | None,
 ) -> str:
     if report is None:
-        return _empty_state("Add --shopping-list-recipe to include crafting targets.")
+        return _empty_state("No crafting target is loaded for this snapshot.")
     if not report.entries:
-        return _empty_state("No missing effective costs for the selected recipes.")
+        return _empty_state("Selected crafting targets are fully covered by this account.")
     price_by_key = _shopping_price_entries_by_key(price_report)
     has_prices = price_report is not None
     rows = []
@@ -543,7 +636,7 @@ def _render_shopping_price_cells(price_entry: ShoppingListPriceEntry | None) -> 
 
 def _render_focus_items(items: list[FocusEntry]) -> str:
     if not items:
-        return _empty_state("No focus items are present in the loaded account data.")
+        return _empty_state("No tracked legendary materials are present in this snapshot.")
     rows = []
     for item in items:
         rows.append(
@@ -580,7 +673,7 @@ def _render_focus_items(items: list[FocusEntry]) -> str:
 
 def _render_activities(activities: list[ActivityGoalStatus]) -> str:
     if not activities:
-        return _empty_state("No activity planner data is available.")
+        return _empty_state("No tracked activity planner data is available.")
     rows = []
     for activity in activities:
         ready_class = "good" if activity.is_ready else "warning"
@@ -680,7 +773,7 @@ def _score_style(score_percent: float | None) -> str:
 
 
 def _empty_state(message: str) -> str:
-    return f'<p class="empty-state">{escape(message)}</p>'
+    return f'<div class="empty-state" role="status"><strong>{escape(message)}</strong></div>'
 
 
 _DASHBOARD_CSS = """
@@ -709,6 +802,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
+  line-height: 1.45;
 }
 
 .app-shell {
@@ -769,7 +863,8 @@ h2 {
 }
 
 .run-meta {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, max-content));
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
@@ -777,11 +872,29 @@ h2 {
   font-size: 0.86rem;
 }
 
-.run-meta span {
-  padding: 6px 9px;
+.meta-chip {
+  min-width: 120px;
+  padding: 7px 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+}
+
+.meta-chip b,
+.meta-chip strong {
+  display: block;
+}
+
+.meta-chip b {
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.meta-chip strong {
+  color: var(--text);
+  font-size: 0.82rem;
 }
 
 .sync-bar {
@@ -866,11 +979,18 @@ h2 {
 .tabs {
   display: flex;
   gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
   margin: 18px 0;
+  padding: 10px 0;
+  background: var(--bg);
   overflow-x: auto;
+  scrollbar-color: var(--line) transparent;
 }
 
 .tab {
+  flex: 0 0 auto;
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -880,6 +1000,7 @@ h2 {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .tab:hover,
@@ -888,7 +1009,8 @@ h2 {
   outline: none;
 }
 
-.tab.is-active {
+.tab.is-active,
+.tab[aria-selected="true"] {
   background: var(--accent);
   border-color: var(--accent);
   color: white;
@@ -898,7 +1020,8 @@ h2 {
   display: none;
 }
 
-.panel.is-active {
+.panel.is-active,
+.panel:not([hidden]) {
   display: block;
 }
 
@@ -1059,6 +1182,7 @@ input[type="search"]:focus {
 
 .table-shell {
   overflow: auto;
+  scrollbar-color: var(--line) transparent;
 }
 
 .summary-strip {
@@ -1097,6 +1221,14 @@ th {
   color: #33423a;
   font-size: 0.8rem;
   text-transform: uppercase;
+}
+
+tbody tr:nth-child(even) td {
+  background: #fbfcfb;
+}
+
+tbody tr:hover td {
+  background: #f1f6f2;
 }
 
 td strong {
@@ -1146,6 +1278,15 @@ td strong {
   color: var(--muted);
 }
 
+.empty-state strong {
+  color: var(--text);
+}
+
+.empty-state[hidden],
+.filter-empty[hidden] {
+  display: none;
+}
+
 @media (max-width: 860px) {
   .app-shell {
     width: min(100% - 20px, 1360px);
@@ -1160,6 +1301,7 @@ td strong {
   }
 
   .run-meta {
+    grid-template-columns: 1fr;
     justify-content: flex-start;
   }
 
@@ -1251,18 +1393,69 @@ _DASHBOARD_JS = """
 
   const tabs = Array.from(document.querySelectorAll("[data-panel-target]"));
   const panels = Array.from(document.querySelectorAll("[data-panel]"));
+  const tabTargets = new Set(tabs.map((tab) => tab.getAttribute("data-panel-target")));
+
+  function activeTargetFromHash() {
+    const target = window.location.hash.replace(/^#/, "");
+    return tabTargets.has(target) ? target : "overview";
+  }
+
+  function activatePanel(target, options = {}) {
+    const resolvedTarget = tabTargets.has(target) ? target : "overview";
+    tabs.forEach((candidate) => {
+      const isActive = candidate.getAttribute("data-panel-target") === resolvedTarget;
+      candidate.classList.toggle("is-active", isActive);
+      candidate.setAttribute("aria-selected", isActive ? "true" : "false");
+      candidate.tabIndex = isActive ? 0 : -1;
+    });
+    panels.forEach((panel) => {
+      const isActive = panel.getAttribute("data-panel") === resolvedTarget;
+      panel.classList.toggle("is-active", isActive);
+      panel.hidden = !isActive;
+    });
+    if (options.updateHash && window.location.hash !== `#${resolvedTarget}`) {
+      window.history.replaceState(null, "", `#${resolvedTarget}`);
+    }
+  }
+
+  function focusAdjacentTab(currentTab, direction) {
+    const currentIndex = tabs.indexOf(currentTab);
+    if (currentIndex < 0) {
+      return;
+    }
+    const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
+    const nextTab = tabs[nextIndex];
+    nextTab.focus();
+    activatePanel(nextTab.getAttribute("data-panel-target"), { updateHash: true });
+  }
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      const target = tab.getAttribute("data-panel-target");
-      tabs.forEach((candidate) => {
-        candidate.classList.toggle("is-active", candidate === tab);
-      });
-      panels.forEach((panel) => {
-        panel.classList.toggle("is-active", panel.getAttribute("data-panel") === target);
-      });
+      activatePanel(tab.getAttribute("data-panel-target"), { updateHash: true });
+    });
+    tab.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        focusAdjacentTab(tab, 1);
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        focusAdjacentTab(tab, -1);
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        tabs[0].focus();
+        activatePanel(tabs[0].getAttribute("data-panel-target"), { updateHash: true });
+      } else if (event.key === "End") {
+        event.preventDefault();
+        const lastTab = tabs[tabs.length - 1];
+        lastTab.focus();
+        activatePanel(lastTab.getAttribute("data-panel-target"), { updateHash: true });
+      }
     });
   });
+  window.addEventListener("hashchange", () => {
+    activatePanel(activeTargetFromHash(), { updateHash: false });
+  });
+  activatePanel(activeTargetFromHash(), { updateHash: false });
 
   const refreshButton = document.querySelector("[data-refresh-dashboard]");
   const syncBar = document.querySelector("[data-sync-bar]");
@@ -1317,16 +1510,25 @@ _DASHBOARD_JS = """
 
   const filter = document.querySelector("#recommendation-filter");
   const rows = Array.from(document.querySelectorAll("[data-recommendation-row]"));
+  const noRecommendationMatches = document.querySelector("[data-recommendation-empty]");
   if (!filter || rows.length === 0) {
     return;
   }
 
   filter.addEventListener("input", () => {
     const query = filter.value.trim().toLowerCase();
+    let visibleCount = 0;
     rows.forEach((row) => {
       const haystack = row.getAttribute("data-search") || "";
-      row.hidden = query.length > 0 && !haystack.includes(query);
+      const isHidden = query.length > 0 && !haystack.includes(query);
+      row.hidden = isHidden;
+      if (!isHidden) {
+        visibleCount += 1;
+      }
     });
+    if (noRecommendationMatches) {
+      noRecommendationMatches.hidden = query.length === 0 || visibleCount > 0;
+    }
   });
 })();
 """

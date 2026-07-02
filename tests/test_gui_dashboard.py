@@ -58,7 +58,14 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert "Gift of Battle" in html
     assert "Sync Status" in html
     assert "Dashboard built from a saved account snapshot." in html
+    assert 'data-run-meta' in html
+    assert "<b>Source</b>" in html
+    assert "<b>Version</b>" in html
+    assert 'role="tablist"' in html
+    assert 'aria-controls="panel-recommendations"' in html
+    assert 'aria-labelledby="tab-recommendations"' in html
     assert 'data-panel-target="recommendations"' in html
+    assert "No recommendations match this filter." in html
 
 
 def test_dashboard_html_renders_live_sync_metadata() -> None:
@@ -83,6 +90,19 @@ def test_dashboard_html_renders_live_sync_metadata() -> None:
     assert "2026-07-02 12:05 UTC" in html
     assert "cache off" in html
     assert "Refresh" in html
+
+
+def test_dashboard_html_uses_polished_empty_states() -> None:
+    payload = _sample_dashboard_payload()
+    payload.shopping_list = None
+    payload.focus_items = []
+
+    html = render_dashboard_html(payload)
+
+    assert "No crafting target is loaded for this snapshot." in html
+    assert "No tracked legendary materials are present in this snapshot." in html
+    assert 'role="status"' in html
+    assert "Add --shopping-list-recipe" not in html
 
 
 def test_dashboard_html_can_include_shopping_list_prices() -> None:
