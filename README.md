@@ -40,11 +40,14 @@ project currently supports:
   existing planner outputs.
 - Building and locally serving a desktop-ready HTML dashboard over the same
   planner outputs.
+- Fetching optional Guild Wars 2 trading-post price estimates for shopping-list
+  item requirements.
 - Exporting planner data as JSON or CSV.
 
 The packaged recipe set is intentionally generation-one focused. Market pricing,
 live rotating objective feeds, native packaging, and multi-account workflows are
-planned for later Phase 5 slices.
+still Phase 5 work; pricing has started as an opt-in overlay and is not used for
+recommendation ranking yet.
 
 ## Requirements
 
@@ -72,6 +75,7 @@ uv run gw2planner recipes evaluate legendary.twilight --input ./exports/
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --missing-only
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --graph
 uv run gw2planner recipes shopping-list legendary.bolt legendary.twilight --input ./exports/
+uv run gw2planner recipes shopping-list legendary.bolt --input ./exports/ --include-prices
 uv run gw2planner recipes validate
 uv run gw2planner activities report --input ./exports/
 uv run gw2planner activities collections --input ./exports/ --data ./collections.json
@@ -93,6 +97,7 @@ uv run gw2planner export collections --input ./exports/ --data ./collections.jso
 uv run gw2planner export recurring --input ./exports/ --data ./recurring.json --format csv
 uv run gw2planner export progression --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --format json
 uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --format csv
+uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --include-prices --format json
 uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv

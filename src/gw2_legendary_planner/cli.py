@@ -12,6 +12,7 @@ from rich.console import Console
 
 from gw2_legendary_planner import __version__
 from gw2_legendary_planner.api.client import GW2ApiClient
+from gw2_legendary_planner.api.commerce import CommercePriceError, CommercePriceService
 from gw2_legendary_planner.api.local import LocalExportError, LocalExportLoader
 from gw2_legendary_planner.cache.local import ApiCache
 from gw2_legendary_planner.config.settings import Settings
@@ -48,6 +49,11 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions_from_path,
 )
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
+from gw2_legendary_planner.planner.market import (
+    ShoppingListPriceReport,
+    price_shopping_list,
+    shopping_list_price_item_ids,
+)
 from gw2_legendary_planner.planner.progression import (
     AccountProgressionReport,
     build_account_progression_report,
@@ -98,6 +104,7 @@ from gw2_legendary_planner.reports.exporters import (
     recipe_validation_rows,
     recurring_task_rows,
     rows_to_csv,
+    shopping_list_price_rows,
     shopping_list_rows,
     starter_kit_rows,
     summary_rows,
@@ -122,6 +129,7 @@ from gw2_legendary_planner.reports.rich_console import (
     render_recipe_validation_report,
     render_recurring_task_report,
     render_shopping_list,
+    render_shopping_list_prices,
     render_starter_kit_evaluations,
     render_wizard_vault_optimization,
     render_wizard_vault_seasons,
@@ -409,8 +417,19 @@ def export_shopping_list(
     output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
     quantity: Annotated[int, typer.Option("--quantity", "-q", min=1)] = 1,
     include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = False,
+    include_prices: Annotated[
+        bool,
+        typer.Option(
+            "--include-prices/--no-prices",
+            help="Fetch current GW2 trading-post price estimates for item requirements.",
+        ),
+    ] = False,
+    no_price_cache: Annotated[
+        bool,
+        typer.Option("--no-price-cache", help="Disable commerce price response cache."),
+    ] = False,
 ) -> None:
-    """Export a price-free shopping list for one or more recipes."""
+    """Export a shopping list for one or more recipes."""
 
     report = _load_shopping_list_report(
         recipe_ids=recipe_ids,
@@ -419,6 +438,17 @@ def export_shopping_list(
         quantity=quantity,
         include_complete=include_complete,
     )
+    if include_prices:
+        price_report = _price_shopping_list_report(
+            report,
+            use_cache=not no_price_cache,
+        )
+        if output_format == "csv":
+            _write_or_print_csv(shopping_list_price_rows(price_report), output)
+            return
+        _write_or_print_text(model_to_json(price_report), output)
+        return
+
     if output_format == "csv":
         _write_or_print_csv(shopping_list_rows(report), output)
         return
@@ -677,8 +707,19 @@ def recipe_shopping_list(
     output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
     quantity: Annotated[int, typer.Option("--quantity", "-q", min=1)] = 1,
     include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = False,
+    include_prices: Annotated[
+        bool,
+        typer.Option(
+            "--include-prices/--no-prices",
+            help="Fetch current GW2 trading-post price estimates for item requirements.",
+        ),
+    ] = False,
+    no_price_cache: Annotated[
+        bool,
+        typer.Option("--no-price-cache", help="Disable commerce price response cache."),
+    ] = False,
 ) -> None:
-    """Build a price-free shopping list from recipe missing effective costs."""
+    """Build a shopping list from recipe missing effective costs."""
 
     report = _load_shopping_list_report(
         recipe_ids=recipe_ids,
@@ -687,6 +728,13 @@ def recipe_shopping_list(
         quantity=quantity,
         include_complete=include_complete,
     )
+    if include_prices:
+        price_report = _price_shopping_list_report(
+            report,
+            use_cache=not no_price_cache,
+        )
+        _write_shopping_list_prices(price_report, output_format=output_format, output=output)
+        return
     _write_shopping_list(report, output_format=output_format, output=output)
 
 
@@ -1450,6 +1498,41 @@ def _write_shopping_list(
         render_shopping_list(console, report)
     elif output_format == "csv":
         _write_or_print_csv(shopping_list_rows(report), output)
+    else:
+        _write_or_print_text(model_to_json(report), output)
+
+
+def _price_shopping_list_report(
+    report: ShoppingListReport,
+    *,
+    use_cache: bool = True,
+) -> ShoppingListPriceReport:
+    settings = Settings.from_environment()
+    cache = (
+        ApiCache(settings.cache_dir, ttl_seconds=settings.cache_ttl_seconds)
+        if use_cache
+        else None
+    )
+    service = CommercePriceService(cache=cache)
+    item_ids = shopping_list_price_item_ids(report)
+    try:
+        prices = service.get_prices(item_ids)
+    except CommercePriceError as exc:
+        console.print(f"[red]Commerce price data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return price_shopping_list(report, prices)
+
+
+def _write_shopping_list_prices(
+    report: ShoppingListPriceReport,
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_shopping_list_prices(console, report)
+    elif output_format == "csv":
+        _write_or_print_csv(shopping_list_price_rows(report), output)
     else:
         _write_or_print_text(model_to_json(report), output)
 

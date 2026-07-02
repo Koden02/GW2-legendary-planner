@@ -3,6 +3,7 @@ from pathlib import Path
 
 from gw2_legendary_planner.api.local import LocalExportLoader
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
+from gw2_legendary_planner.models.commerce import CommercePrice
 from gw2_legendary_planner.planner.achievements import (
     build_achievement_report,
     load_achievement_goal_definitions_from_path,
@@ -13,6 +14,7 @@ from gw2_legendary_planner.planner.collections import (
     CollectionRequirement,
     evaluate_collections,
 )
+from gw2_legendary_planner.planner.market import price_shopping_list
 from gw2_legendary_planner.planner.progression import build_account_progression_report
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
@@ -40,6 +42,7 @@ from gw2_legendary_planner.reports.exporters import (
     recommendation_rows,
     recurring_task_rows,
     rows_to_csv,
+    shopping_list_price_rows,
     shopping_list_rows,
     starter_kit_rows,
     summary_rows,
@@ -121,6 +124,33 @@ def test_shopping_list_rows_are_flat() -> None:
     assert by_name["Mystic Clover"]["missing_quantity"] == 65
     assert by_name["Icy Runestone"]["acquisition"] == "Vendor purchase"
     assert by_name["Mystic Clover"]["contributing_recipes"] == "legendary.bolt"
+
+
+def test_shopping_list_price_rows_are_flat() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    inventory = InventoryAggregator().aggregate(snapshot)
+    repository = get_default_recipe_repository()
+    recipe = repository.get_recipe("legendary.bolt")
+    assert recipe is not None
+
+    evaluation = RecipeEvaluator(repository).evaluate(recipe, snapshot, inventory)
+    shopping_list = build_shopping_list([evaluation])
+    price_report = price_shopping_list(
+        shopping_list,
+        {
+            24358: CommercePrice(
+                id=24358,
+                buys={"quantity": 20, "unit_price": 80},
+                sells={"quantity": 12, "unit_price": 125},
+            )
+        },
+    )
+    rows = shopping_list_price_rows(price_report)
+    by_name = {row["name"]: row for row in rows}
+
+    assert by_name["Ancient Bone"]["price_status"] == "priced"
+    assert by_name["Ancient Bone"]["estimated_buy_cost"] == 31_250
+    assert by_name["Mystic Clover"]["price_status"] == "no_market_price"
 
 
 def test_activity_rows_are_flat() -> None:

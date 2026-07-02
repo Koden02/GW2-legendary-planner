@@ -53,12 +53,14 @@ combined target, and report missing quantities with acquisition hints.
 
 ```powershell
 uv run gw2planner recipes shopping-list legendary.bolt --input ./exports/
+uv run gw2planner recipes shopping-list legendary.bolt --input ./exports/ --include-prices
 uv run gw2planner recipes shopping-list legendary.bolt legendary.twilight --input ./exports/ --format csv
 uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --format json
 ```
 
-Shopping lists do not include trading-post prices, automatic vendor costs, or
-purchase optimization. Those belong to later market-data work.
+Base shopping lists do not include trading-post prices, automatic vendor costs,
+or purchase optimization. `--include-prices` runs a separate commerce-price
+overlay for item requirements after the price-free shopping list is built.
 
 ## Current Limits
 
@@ -66,9 +68,9 @@ Top-level legendary recipes recurse into `Gift of Mastery`, `Gift of Fortune`,
 `Gift of Might`, `Gift of Magic`, weapon-specific Mystic Forge gifts, and
 API-backed shared crafting recipes.
 
-Dungeon gifts, karma/vendor purchases, and trading-post price estimates are still
-represented as terminal requirements. Their acquisition planners belong in later
-phases.
+Dungeon gifts and karma/vendor purchases are still represented as terminal
+requirements. Their acquisition planners belong in later phases. Trading-post
+price estimates are an optional report overlay, not recipe data.
 
 ## Data Rules
 

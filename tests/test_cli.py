@@ -515,6 +515,61 @@ def test_cli_recipes_shopping_list_csv_success() -> None:
     assert "legendary.bolt" in result.output
 
 
+def test_cli_recipes_shopping_list_can_include_price_report(monkeypatch) -> None:
+    from gw2_legendary_planner.planner.market import (
+        ShoppingListPriceEntry,
+        ShoppingListPriceReport,
+    )
+
+    def fake_price_report(report, *, use_cache: bool = True):
+        assert report.entries
+        assert use_cache is True
+        return ShoppingListPriceReport(
+            goals=report.goals,
+            entries=[
+                ShoppingListPriceEntry(
+                    kind="item",
+                    id=19976,
+                    name="Mystic Coin",
+                    missing_quantity=2,
+                    price_status="priced",
+                    buy_order_unit_price=110,
+                    sell_listing_unit_price=125,
+                    estimated_buy_cost=250,
+                    estimated_sell_value=220,
+                )
+            ],
+            priced_entry_count=1,
+            total_estimated_buy_cost=250,
+            total_estimated_sell_value=220,
+        )
+
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli._price_shopping_list_report",
+        fake_price_report,
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "recipes",
+            "shopping-list",
+            "legendary.bolt",
+            "--input",
+            str(FIXTURE_DIR),
+            "--include-prices",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["priced_entry_count"] == 1
+    assert payload["total_estimated_buy_cost"] == 250
+    assert payload["entries"][0]["price_status"] == "priced"
+
+
 def test_cli_recipes_validate_success() -> None:
     result = runner.invoke(app, ["recipes", "validate"])
 

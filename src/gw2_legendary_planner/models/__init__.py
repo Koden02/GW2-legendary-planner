@@ -5,6 +5,7 @@ from gw2_legendary_planner.models.account import (
     ItemStack,
     WalletEntry,
 )
+from gw2_legendary_planner.models.commerce import CommerceListingSummary, CommercePrice
 from gw2_legendary_planner.models.items import ItemMetadata
 from gw2_legendary_planner.models.snapshot import AccountSnapshot
 
@@ -12,6 +13,8 @@ __all__ = [
     "Account",
     "AccountSnapshot",
     "Character",
+    "CommerceListingSummary",
+    "CommercePrice",
     "CraftingDiscipline",
     "ItemMetadata",
     "ItemStack",

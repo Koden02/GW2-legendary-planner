@@ -7,6 +7,7 @@ from gw2_legendary_planner.planner.achievements import AchievementGoalStatus
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.collections import CollectionProgress
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
+from gw2_legendary_planner.planner.market import ShoppingListPriceReport
 from gw2_legendary_planner.planner.progression import (
     AccountProgressionReport,
     AccountRecommendation,
@@ -497,6 +498,43 @@ def render_shopping_list(console: Console, report: ShoppingListReport) -> None:
     console.print(table)
 
 
+def render_shopping_list_prices(
+    console: Console,
+    report: ShoppingListPriceReport,
+) -> None:
+    summary = Table(title="Shopping List Market Prices")
+    summary.add_column("Metric")
+    summary.add_column("Value", justify="right")
+    summary.add_row("Goals", f"{len(report.goals):,}")
+    summary.add_row("Priced entries", f"{report.priced_entry_count:,}")
+    summary.add_row("Unpriced entries", f"{report.unpriced_entry_count:,}")
+    summary.add_row("Estimated buy cost", _format_copper(report.total_estimated_buy_cost))
+    summary.add_row("Estimated sell value", _format_copper(report.total_estimated_sell_value))
+    console.print(summary)
+
+    if not report.entries:
+        console.print("[green]No shopping-list entries are available for pricing.[/green]")
+        return
+
+    table = Table(title="Market Price Overlay")
+    table.add_column("Requirement")
+    table.add_column("Missing", justify="right")
+    table.add_column("Status")
+    table.add_column("Buy now", justify="right")
+    table.add_column("Total", justify="right")
+    table.add_column("Note")
+    for entry in report.entries:
+        table.add_row(
+            entry.name or str(entry.id),
+            f"{entry.missing_quantity:,}",
+            entry.price_status.replace("_", " "),
+            _format_optional_copper(entry.sell_listing_unit_price),
+            _format_optional_copper(entry.estimated_buy_cost),
+            entry.note or "",
+        )
+    console.print(table)
+
+
 def render_recipe_validation_report(console: Console, report: RecipeValidationReport) -> None:
     if not report.issues:
         console.print("[green]Recipe data validation passed.[/green]")
@@ -518,3 +556,13 @@ def render_recipe_validation_report(console: Console, report: RecipeValidationRe
             issue.message,
         )
     console.print(table)
+
+
+def _format_optional_copper(value: int | None) -> str:
+    return _format_copper(value) if value is not None else "-"
+
+
+def _format_copper(value: int) -> str:
+    gold, remainder = divmod(value, 10_000)
+    silver, copper = divmod(remainder, 100)
+    return f"{gold:,}g {silver:02d}s {copper:02d}c"

@@ -14,6 +14,7 @@ from gw2_legendary_planner.planner.achievements import AchievementGoalStatus
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.collections import CollectionProgress
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
+from gw2_legendary_planner.planner.market import ShoppingListPriceReport
 from gw2_legendary_planner.planner.progression import (
     AccountProgressionReport,
     AccountRecommendation,
@@ -526,6 +527,26 @@ def shopping_list_rows(report: ShoppingListReport) -> list[dict[str, str | int |
             "contributing_recipes": ",".join(
                 contribution.recipe_id for contribution in entry.contributions
             ),
+        }
+        for entry in report.entries
+    ]
+
+
+def shopping_list_price_rows(
+    report: ShoppingListPriceReport,
+) -> list[dict[str, str | int]]:
+    return [
+        {
+            "kind": entry.kind,
+            "id": entry.id,
+            "name": entry.name or "",
+            "missing_quantity": entry.missing_quantity,
+            "price_status": entry.price_status,
+            "buy_order_unit_price": entry.buy_order_unit_price or "",
+            "sell_listing_unit_price": entry.sell_listing_unit_price or "",
+            "estimated_buy_cost": entry.estimated_buy_cost or "",
+            "estimated_sell_value": entry.estimated_sell_value or "",
+            "note": entry.note or "",
         }
         for entry in report.entries
     ]

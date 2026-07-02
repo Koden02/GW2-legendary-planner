@@ -134,8 +134,8 @@ Keep entries small, explicit, and source-verifiable:
 - add tests for repository lookup and evaluation behavior
 - run `gw2planner recipes validate`
 
-Do not add market-price assumptions to recipe data. Price integration belongs to
-a later phase.
+Do not add market-price assumptions to recipe data. Optional price overlays
+belong in `planner/market.py` and should consume completed planner outputs.
 
 ## Adding Activity Planner Data
 
@@ -169,7 +169,7 @@ Wizard's Vault seasonal data must include source URLs and last-verified dates.
 Current-season data is treated as invalid if it is stale.
 Wizard's Vault optimization uses source-provided reward tags and the account's
 Astral Acclaim wallet balance. Do not add price-derived value claims until the
-market data phase exists.
+Wizard's Vault optimizer has an explicit price-aware design.
 
 ## Adding Progression Recommendations
 
@@ -177,6 +177,6 @@ Progression recommendations live in `planner/progression.py`.
 
 - compose existing planner outputs instead of re-implementing their checks
 - keep recommendation reasons explicit and source-limited
-- do not rank by market price until market data services exist
+- do not rank by market price until price-aware scoring is explicitly designed
 - require caller-provided data for seasonal or rotating content
 - add tests for score components, ranking, and CLI/export output

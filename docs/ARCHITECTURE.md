@@ -6,7 +6,8 @@ desktop UI, and future automation surfaces should call the same library services
 ## Package Layout
 
 - `api/` handles Guild Wars 2 API communication and local JSON export loading.
-  It also owns reusable API-backed services such as item metadata lookup.
+  It also owns reusable API-backed services such as item metadata and commerce
+  price lookup.
 - `models/` contains Pydantic models for API payloads and normalized snapshots.
 - `inventory/` flattens account storage into account-wide item quantities and
   location records.
@@ -33,6 +34,8 @@ flowchart TD
     Snapshot --> Planner
     APIItems["ItemMetadataService"] --> Cache
     APIItems --> ItemModels["ItemMetadata"]
+    APICommerce["CommercePriceService"] --> Cache
+    APICommerce --> CommerceModels["CommercePrice"]
     Planner --> Reports
     Reports --> Output["Rich, JSON, CSV"]
     Diagnostics["doctor diagnostics"] --> API
@@ -91,6 +94,23 @@ The inventory engine stores item IDs and locations only. Metadata enrichment is 
 separate service so future planners and UIs can opt in without changing
 aggregation behavior.
 
+## Commerce Pricing
+
+`CommercePriceService` is a reusable API service for `/v2/commerce/prices`.
+
+It supports:
+
+- `get_price(item_id)` for lazy single-item lookup
+- `get_prices(item_ids)` for batched lookup
+- in-memory reuse during one process
+- optional per-item local cache using `ApiCache`
+- best-effort skipping of unpriced or unmarketable item ids
+
+`planner/market.py` owns the optional shopping-list price overlay. Recipe data,
+inventory aggregation, and recipe evaluation remain price-free. Market price
+reports use current trading-post summaries to estimate missing item buy cost and
+sell value, but recommendation ranking does not consume prices yet.
+
 ## Data-Driven Planning
 
 Legendary focus items are stored in `src/gw2_legendary_planner/data/`.
@@ -121,6 +141,8 @@ The recipe engine has three separable pieces:
 - `RecipeEvaluator` evaluates a recipe against `AccountSnapshot` and `Inventory`.
 - `planner/shopping_list.py` aggregates recipe effective costs into a
   price-free shopping list for one or more selected goals.
+- `planner/market.py` can optionally enrich a shopping list with commerce
+  prices without changing recipe evaluation.
 
 Evaluation returns:
 
@@ -134,6 +156,7 @@ Those belong to later planner phases.
 
 Shopping-list generation consumes `RecipeEvaluation.costs`. It does not
 duplicate recipe traversal and it does not query trading-post or market prices.
+Market enrichment is a separate opt-in pass over the finished shopping list.
 
 ## Activity Planners
 

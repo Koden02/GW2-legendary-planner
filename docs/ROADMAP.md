@@ -26,7 +26,7 @@ high-signal terminal requirements.
 Intentionally deferred from Phase 2: dungeon gift planners, activity
 optimization, trading-post or market pricing, shopping lists, and recommendation
 scoring. Shopping lists and recommendation scoring are now handled by later
-phase work; pricing remains deferred.
+phase work; pricing is now starting in Phase 5 as an optional overlay.
 
 ## Phase 3: Legendary Activity Planners - Complete
 
@@ -85,7 +85,9 @@ recommendation, and shopping-list outputs. It can be written as standalone HTML
 or served locally with `gw2planner gui serve`. Served dashboards expose sync
 status plus a refresh action for reloading account data from the selected source.
 Price-free shopping-list generation is available from recipe effective costs and
-can be exported as JSON or CSV.
+can be exported as JSON or CSV. Optional shopping-list market price overlays can
+fetch `/v2/commerce/prices` summaries for missing item requirements without
+making recipes or recommendations price-aware.
 
-Next scope: native packaging, richer live synchronization UX, market-price
-integration, multi-account profiles, and plugin loading.
+Next scope: native packaging, richer live synchronization UX, dashboard price
+display, multi-account profiles, and plugin loading.
