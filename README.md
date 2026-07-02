@@ -12,7 +12,8 @@ and planning engines.
 ## Status
 
 Phase 2, Phase 3 activity planning, and Phase 4 progression planning are
-complete. The project currently supports:
+complete. Phase 5 desktop work has started with a local browser dashboard. The
+project currently supports:
 
 - Loading account data from local JSON exports or the authenticated Guild Wars 2 API.
 - Flattening account-wide inventory from material storage, bank, shared inventory,
@@ -36,11 +37,13 @@ complete. The project currently supports:
   seasonal reward data.
 - Scoring account progression and ranking next-step recommendations from the
   existing planner outputs.
+- Building and locally serving a desktop-ready HTML dashboard over the same
+  planner outputs.
 - Exporting planner data as JSON or CSV.
 
 The packaged recipe set is intentionally generation-one focused. Market pricing,
-shopping lists, live rotating objective feeds, and GUI work are planned for
-later phases.
+shopping lists, live rotating objective feeds, native packaging, and
+multi-account workflows are planned for later Phase 5 slices.
 
 ## Requirements
 
@@ -90,6 +93,8 @@ uv run gw2planner export progression --input ./exports/ --achievements-data ./ac
 uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
+uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --output dashboard.html
+uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --port 8765
 uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
 ```

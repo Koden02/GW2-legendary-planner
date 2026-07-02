@@ -197,14 +197,25 @@ should:
 Do not put planner-specific knowledge in `inventory/`, `api/local.py`, or report
 exporters.
 
-## Future GUI
+## GUI Layer
 
-A desktop GUI should call the same services used by the CLI:
+The Phase 5 GUI foundation lives under `gui/`. It adapts existing planner
+outputs into a desktop-ready browser dashboard without moving business logic
+into the presentation layer.
 
-1. Load `AccountSnapshot`.
-2. Build `Inventory`.
-3. Build summaries, focus reports, and future recommendations.
-4. Render those models in the GUI layer.
+The current flow is:
 
-No GUI code should call GW2 API endpoints, parse inventory sources, or evaluate
-recipes directly.
+```mermaid
+flowchart LR
+    Snapshot["AccountSnapshot"] --> Inventory["Inventory"]
+    Inventory --> Planners["Planner reports"]
+    Snapshot --> Planners
+    Planners --> Payload["DashboardPayload"]
+    Payload --> HTML["Standalone HTML dashboard"]
+    HTML --> Server["Local preview server"]
+```
+
+`gui/dashboard.py` owns the dashboard view model and HTML rendering.
+`gui/server.py` owns local preview serving. CLI commands may load account data
+and pass planner outputs into the GUI layer, but GUI code should not call GW2 API
+endpoints, parse inventory sources, or evaluate recipes directly.

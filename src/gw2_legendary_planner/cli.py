@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import webbrowser
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -14,6 +15,13 @@ from gw2_legendary_planner.api.local import LocalExportError, LocalExportLoader
 from gw2_legendary_planner.cache.local import ApiCache
 from gw2_legendary_planner.config.settings import Settings
 from gw2_legendary_planner.diagnostics import build_doctor_report, render_doctor_report
+from gw2_legendary_planner.gui.dashboard import (
+    DashboardPayload,
+    build_dashboard_payload,
+    render_dashboard_html,
+    write_dashboard_html,
+)
+from gw2_legendary_planner.gui.server import create_dashboard_server
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
 from gw2_legendary_planner.inventory.models import Inventory
 from gw2_legendary_planner.models.snapshot import AccountSnapshot
@@ -119,10 +127,12 @@ export_app = typer.Typer(help="Export planner data.")
 recipe_app = typer.Typer(help="Inspect and evaluate data-defined recipes.")
 activity_app = typer.Typer(help="Inspect legendary activity planners.")
 progress_app = typer.Typer(help="Score account progression and recommend next steps.")
+gui_app = typer.Typer(help="Build and preview the desktop dashboard.")
 app.add_typer(export_app, name="export")
 app.add_typer(recipe_app, name="recipes")
 app.add_typer(activity_app, name="activities")
 app.add_typer(progress_app, name="progress")
+app.add_typer(gui_app, name="gui")
 console = Console()
 
 Format = Literal["json", "csv"]
@@ -1062,6 +1072,134 @@ def progress_recommend(
         _write_or_print_text(model_to_json(report), output)
 
 
+@gui_app.command("build")
+def build_gui_dashboard(
+    api_key: Annotated[
+        str | None,
+        typer.Option("--api-key", help="Guild Wars 2 API key. Defaults to GW2PLANNER_API_KEY."),
+    ] = None,
+    input_dir: Annotated[
+        Path | None,
+        typer.Option("--input", "-i", help="Directory containing local GW2 API JSON exports."),
+    ] = None,
+    output: Annotated[
+        Path,
+        typer.Option("--output", "-o", help="Standalone dashboard HTML output path."),
+    ] = Path("gw2planner-dashboard.html"),
+    no_cache: Annotated[
+        bool,
+        typer.Option("--no-cache", help="Disable API response cache."),
+    ] = False,
+    collections_data: Annotated[
+        Path | None,
+        typer.Option("--collections-data", help="Load collection definitions from JSON."),
+    ] = None,
+    achievements_data: Annotated[
+        Path | None,
+        typer.Option("--achievements-data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    recurring_data: Annotated[
+        Path | None,
+        typer.Option("--recurring-data", help="Load daily/weekly task definitions from JSON."),
+    ] = None,
+    wizard_vault_data: Annotated[
+        Path | None,
+        typer.Option("--wizard-vault-data", help="Load Wizard's Vault season data from JSON."),
+    ] = None,
+    starter_kit_sets: Annotated[
+        list[int] | None,
+        typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
+    ] = None,
+    max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
+) -> None:
+    """Build a standalone browser dashboard."""
+
+    payload = _load_dashboard_payload(
+        api_key=api_key,
+        input_dir=input_dir,
+        use_cache=not no_cache,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+    write_dashboard_html(output, payload)
+    console.print(f"[green]Dashboard written:[/green] {output}")
+
+
+@gui_app.command("serve")
+def serve_gui_dashboard(
+    api_key: Annotated[
+        str | None,
+        typer.Option("--api-key", help="Guild Wars 2 API key. Defaults to GW2PLANNER_API_KEY."),
+    ] = None,
+    input_dir: Annotated[
+        Path | None,
+        typer.Option("--input", "-i", help="Directory containing local GW2 API JSON exports."),
+    ] = None,
+    host: Annotated[str, typer.Option("--host", help="Local bind host.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port", min=0, help="Local bind port.")] = 8765,
+    open_browser: Annotated[
+        bool,
+        typer.Option("--open/--no-open", help="Open the dashboard in the default browser."),
+    ] = False,
+    no_cache: Annotated[
+        bool,
+        typer.Option("--no-cache", help="Disable API response cache."),
+    ] = False,
+    collections_data: Annotated[
+        Path | None,
+        typer.Option("--collections-data", help="Load collection definitions from JSON."),
+    ] = None,
+    achievements_data: Annotated[
+        Path | None,
+        typer.Option("--achievements-data", help="Load achievement goal definitions from JSON."),
+    ] = None,
+    recurring_data: Annotated[
+        Path | None,
+        typer.Option("--recurring-data", help="Load daily/weekly task definitions from JSON."),
+    ] = None,
+    wizard_vault_data: Annotated[
+        Path | None,
+        typer.Option("--wizard-vault-data", help="Load Wizard's Vault season data from JSON."),
+    ] = None,
+    starter_kit_sets: Annotated[
+        list[int] | None,
+        typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
+    ] = None,
+    max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
+) -> None:
+    """Serve the dashboard locally until interrupted."""
+
+    payload = _load_dashboard_payload(
+        api_key=api_key,
+        input_dir=input_dir,
+        use_cache=not no_cache,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+    html = render_dashboard_html(payload)
+    server = create_dashboard_server(html, host=host, port=port)
+    resolved_host, resolved_port = server.server_address
+    url = f"http://{resolved_host}:{resolved_port}/"
+    console.print(f"[green]Serving dashboard:[/green] {url}")
+    if open_browser:
+        webbrowser.open(url)
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        console.print("Dashboard server stopped.")
+    finally:
+        server.server_close()
+
+
 @app.command()
 def doctor(
     input_dir: Annotated[
@@ -1308,6 +1446,29 @@ def _load_progression_report(
 ) -> AccountProgressionReport:
     snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
     inventory = InventoryAggregator().aggregate(snapshot)
+    return _build_progression_report_for_snapshot(
+        snapshot,
+        inventory,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+
+
+def _build_progression_report_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    collections_data: Path | None = None,
+    achievements_data: Path | None = None,
+    recurring_data: Path | None = None,
+    wizard_vault_data: Path | None = None,
+    starter_kit_sets: list[int] | None = None,
+    max_recommendations: int = 10,
+) -> AccountProgressionReport:
     repository = get_default_recipe_repository()
     activity_statuses = build_activity_report(snapshot, inventory)
     achievement_statuses = _build_achievement_statuses_for_snapshot(
@@ -1349,6 +1510,67 @@ def _load_progression_report(
         starter_kit_evaluations=starter_kit_evaluations,
         wizard_vault_report=wizard_vault_report,
         max_recommendations=max_recommendations,
+    )
+
+
+def _load_dashboard_payload(
+    *,
+    api_key: str | None,
+    input_dir: Path | None,
+    use_cache: bool,
+    collections_data: Path | None = None,
+    achievements_data: Path | None = None,
+    recurring_data: Path | None = None,
+    wizard_vault_data: Path | None = None,
+    starter_kit_sets: list[int] | None = None,
+    max_recommendations: int = 10,
+) -> DashboardPayload:
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir, use_cache=use_cache)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    return _build_dashboard_payload_for_snapshot(
+        snapshot,
+        inventory,
+        source_label=str(input_dir) if input_dir else "Guild Wars 2 API",
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+
+
+def _build_dashboard_payload_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    source_label: str,
+    collections_data: Path | None = None,
+    achievements_data: Path | None = None,
+    recurring_data: Path | None = None,
+    wizard_vault_data: Path | None = None,
+    starter_kit_sets: list[int] | None = None,
+    max_recommendations: int = 10,
+) -> DashboardPayload:
+    summary = build_account_summary(snapshot, inventory)
+    focus_items = build_legendary_focus_report(snapshot, inventory, include_zero=False)
+    activities = build_activity_report(snapshot, inventory)
+    progression_report = _build_progression_report_for_snapshot(
+        snapshot,
+        inventory,
+        collections_data=collections_data,
+        achievements_data=achievements_data,
+        recurring_data=recurring_data,
+        wizard_vault_data=wizard_vault_data,
+        starter_kit_sets=starter_kit_sets,
+        max_recommendations=max_recommendations,
+    )
+    return build_dashboard_payload(
+        summary,
+        focus_items=focus_items,
+        activities=activities,
+        progression_report=progression_report,
+        source_label=source_label,
     )
 
 

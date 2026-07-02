@@ -69,7 +69,7 @@ Post-Phase 4 refinement scope: connect richer source-backed achievement,
 collection, daily, and weekly planner inputs. These should stay data-backed and
 should not infer current rotating objectives without verifiable source data.
 
-## Phase 5: Desktop Application
+## Phase 5: Desktop Application - In Progress
 
 - Desktop GUI.
 - Live API synchronization.
@@ -77,3 +77,11 @@ should not infer current rotating objectives without verifiable source data.
 - Automatic market price integration.
 - Multi-account support.
 - Plugin system.
+
+Current scope: a desktop-ready browser dashboard is implemented as a GUI adapter
+over existing account summary, focus, activity, progression score, and
+recommendation outputs. It can be written as standalone HTML or served locally
+with `gw2planner gui serve`.
+
+Next scope: native packaging, live synchronization UX, shopping-list views,
+market-price integration, multi-account profiles, and plugin loading.

@@ -237,6 +237,44 @@ def test_cli_export_wizard_vault_optimization_json_success() -> None:
     assert payload["recommendations"][0]["recommended_quantity"] == 1
 
 
+def test_cli_gui_build_success(tmp_path: Path) -> None:
+    output = tmp_path / "dashboard.html"
+    result = runner.invoke(
+        app,
+        [
+            "gui",
+            "build",
+            "--input",
+            str(FIXTURE_DIR),
+            "--achievements-data",
+            str(ACHIEVEMENT_FIXTURE),
+            "--collections-data",
+            str(COLLECTION_FIXTURE),
+            "--recurring-data",
+            str(RECURRING_FIXTURE),
+            "--output",
+            str(output),
+        ],
+    )
+
+    assert result.exit_code == 0
+    html = output.read_text(encoding="utf-8")
+    assert "Dashboard written" in result.output
+    assert "Example.1234" in html
+    assert "Recommendation Engine" in html
+    assert "Sample Weekly Achievement Progress" in html
+
+
+def test_cli_gui_build_fails_without_input_or_api_key(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["gui", "build", "--output", str(tmp_path / "dashboard.html")],
+    )
+
+    assert result.exit_code != 0
+    assert "Provide --api-key" in result.output
+
+
 def test_cli_doctor_success() -> None:
     result = runner.invoke(app, ["doctor", "--input", str(FIXTURE_DIR)])
 
