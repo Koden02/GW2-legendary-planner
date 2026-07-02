@@ -25,6 +25,7 @@ project currently supports:
 - Evaluating all generation-one top-level legendary weapon recipes plus selected
   weapon-gift, shared, and API-verified crafting subrecipes with readiness
   percentage, missing requirements, acquisition hints, and dependency graph output.
+- Generating price-free shopping lists from missing effective recipe costs.
 - Evaluating Gift of Battle and Gift of Exploration activity readiness from
   account inventory.
 - Tracking data-defined collection/checklist progress from account inventory,
@@ -42,8 +43,8 @@ project currently supports:
 - Exporting planner data as JSON or CSV.
 
 The packaged recipe set is intentionally generation-one focused. Market pricing,
-shopping lists, live rotating objective feeds, native packaging, and
-multi-account workflows are planned for later Phase 5 slices.
+live rotating objective feeds, native packaging, and multi-account workflows are
+planned for later Phase 5 slices.
 
 ## Requirements
 
@@ -70,6 +71,7 @@ uv run gw2planner recipes show legendary.twilight
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --missing-only
 uv run gw2planner recipes evaluate legendary.twilight --input ./exports/ --graph
+uv run gw2planner recipes shopping-list legendary.bolt legendary.twilight --input ./exports/
 uv run gw2planner recipes validate
 uv run gw2planner activities report --input ./exports/
 uv run gw2planner activities collections --input ./exports/ --data ./collections.json
@@ -90,11 +92,12 @@ uv run gw2planner export achievements --input ./exports/ --data ./achievements.j
 uv run gw2planner export collections --input ./exports/ --data ./collections.json --format csv
 uv run gw2planner export recurring --input ./exports/ --data ./recurring.json --format csv
 uv run gw2planner export progression --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --format json
+uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --format csv
 uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
-uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --output dashboard.html
-uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --port 8765
+uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --output dashboard.html
+uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --port 8765
 uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
 ```

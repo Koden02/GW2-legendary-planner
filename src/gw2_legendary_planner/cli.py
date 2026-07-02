@@ -63,6 +63,10 @@ from gw2_legendary_planner.planner.recurring import (
     load_recurring_task_definitions,
     load_recurring_task_definitions_from_path,
 )
+from gw2_legendary_planner.planner.shopping_list import (
+    ShoppingListReport,
+    build_shopping_list,
+)
 from gw2_legendary_planner.planner.starter_kits import (
     StarterKitSetEvaluation,
     evaluate_starter_kit_sets,
@@ -93,6 +97,7 @@ from gw2_legendary_planner.reports.exporters import (
     recipe_validation_rows,
     recurring_task_rows,
     rows_to_csv,
+    shopping_list_rows,
     starter_kit_rows,
     summary_rows,
     wizard_vault_optimization_rows,
@@ -115,6 +120,7 @@ from gw2_legendary_planner.reports.rich_console import (
     render_recipe_list,
     render_recipe_validation_report,
     render_recurring_task_report,
+    render_shopping_list,
     render_starter_kit_evaluations,
     render_wizard_vault_optimization,
     render_wizard_vault_seasons,
@@ -390,6 +396,34 @@ def export_progression(
     _write_or_print_text(model_to_json(report), output)
 
 
+@export_app.command("shopping-list")
+def export_shopping_list(
+    recipe_ids: Annotated[
+        list[str],
+        typer.Argument(help="Recipe ids to include, such as legendary.bolt."),
+    ],
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[Format, typer.Option("--format", "-f")] = "json",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    quantity: Annotated[int, typer.Option("--quantity", "-q", min=1)] = 1,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = False,
+) -> None:
+    """Export a price-free shopping list for one or more recipes."""
+
+    report = _load_shopping_list_report(
+        recipe_ids=recipe_ids,
+        api_key=api_key,
+        input_dir=input_dir,
+        quantity=quantity,
+        include_complete=include_complete,
+    )
+    if output_format == "csv":
+        _write_or_print_csv(shopping_list_rows(report), output)
+        return
+    _write_or_print_text(model_to_json(report), output)
+
+
 @export_app.command("recurring")
 def export_recurring(
     api_key: Annotated[str | None, typer.Option("--api-key")] = None,
@@ -628,6 +662,31 @@ def evaluate_recipe(
             model_to_json(_evaluation_for_export(evaluation, missing_only=missing_only)),
             output,
         )
+
+
+@recipe_app.command("shopping-list")
+def recipe_shopping_list(
+    recipe_ids: Annotated[
+        list[str],
+        typer.Argument(help="Recipe ids to include, such as legendary.bolt."),
+    ],
+    api_key: Annotated[str | None, typer.Option("--api-key")] = None,
+    input_dir: Annotated[Path | None, typer.Option("--input", "-i")] = None,
+    output_format: Annotated[RecipeFormat, typer.Option("--format", "-f")] = "rich",
+    output: Annotated[Path | None, typer.Option("--output", "-o")] = None,
+    quantity: Annotated[int, typer.Option("--quantity", "-q", min=1)] = 1,
+    include_complete: Annotated[bool, typer.Option("--include-complete/--missing-only")] = False,
+) -> None:
+    """Build a price-free shopping list from recipe missing effective costs."""
+
+    report = _load_shopping_list_report(
+        recipe_ids=recipe_ids,
+        api_key=api_key,
+        input_dir=input_dir,
+        quantity=quantity,
+        include_complete=include_complete,
+    )
+    _write_shopping_list(report, output_format=output_format, output=output)
 
 
 @recipe_app.command("validate")
@@ -1110,6 +1169,18 @@ def build_gui_dashboard(
         list[int] | None,
         typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
     ] = None,
+    shopping_list_recipes: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--shopping-list-recipe",
+            help="Add a recipe id to the dashboard shopping list. Repeat for multiple.",
+        ),
+    ] = None,
+    shopping_list_quantity: Annotated[int, typer.Option("--shopping-list-quantity", min=1)] = 1,
+    include_complete_shopping_list: Annotated[
+        bool,
+        typer.Option("--include-complete-shopping-list/--missing-shopping-list-only"),
+    ] = False,
     max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
 ) -> None:
     """Build a standalone browser dashboard."""
@@ -1123,6 +1194,9 @@ def build_gui_dashboard(
         recurring_data=recurring_data,
         wizard_vault_data=wizard_vault_data,
         starter_kit_sets=starter_kit_sets,
+        shopping_list_recipes=shopping_list_recipes,
+        shopping_list_quantity=shopping_list_quantity,
+        include_complete_shopping_list=include_complete_shopping_list,
         max_recommendations=max_recommendations,
     )
     write_dashboard_html(output, payload)
@@ -1169,6 +1243,18 @@ def serve_gui_dashboard(
         list[int] | None,
         typer.Option("--starter-kit-set", min=1, help="Include specific starter-kit sets."),
     ] = None,
+    shopping_list_recipes: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--shopping-list-recipe",
+            help="Add a recipe id to the dashboard shopping list. Repeat for multiple.",
+        ),
+    ] = None,
+    shopping_list_quantity: Annotated[int, typer.Option("--shopping-list-quantity", min=1)] = 1,
+    include_complete_shopping_list: Annotated[
+        bool,
+        typer.Option("--include-complete-shopping-list/--missing-shopping-list-only"),
+    ] = False,
     max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
 ) -> None:
     """Serve the dashboard locally until interrupted."""
@@ -1182,6 +1268,9 @@ def serve_gui_dashboard(
         recurring_data=recurring_data,
         wizard_vault_data=wizard_vault_data,
         starter_kit_sets=starter_kit_sets,
+        shopping_list_recipes=shopping_list_recipes,
+        shopping_list_quantity=shopping_list_quantity,
+        include_complete_shopping_list=include_complete_shopping_list,
         max_recommendations=max_recommendations,
     )
     html = render_dashboard_html(payload)
@@ -1275,6 +1364,66 @@ def _load_recipe_or_exit(recipe_id: str, repository=None):
     console.print(f"[red]Unknown recipe id:[/red] {recipe_id}")
     console.print("Run `gw2planner recipes list` to see available recipes.")
     raise typer.Exit(1)
+
+
+def _load_shopping_list_report(
+    *,
+    recipe_ids: list[str],
+    api_key: str | None,
+    input_dir: Path | None,
+    quantity: int = 1,
+    include_complete: bool = False,
+) -> ShoppingListReport:
+    repository = get_default_recipe_repository()
+    snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir)
+    inventory = InventoryAggregator().aggregate(snapshot)
+    evaluator = RecipeEvaluator(repository)
+    evaluations = [
+        evaluator.evaluate(
+            _load_recipe_or_exit(recipe_id, repository=repository),
+            snapshot,
+            inventory,
+            quantity=quantity,
+        )
+        for recipe_id in recipe_ids
+    ]
+    return build_shopping_list(evaluations, include_complete=include_complete)
+
+
+def _build_shopping_list_report_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    recipe_ids: list[str],
+    quantity: int = 1,
+    include_complete: bool = False,
+) -> ShoppingListReport:
+    repository = get_default_recipe_repository()
+    evaluator = RecipeEvaluator(repository)
+    evaluations = [
+        evaluator.evaluate(
+            _load_recipe_or_exit(recipe_id, repository=repository),
+            snapshot,
+            inventory,
+            quantity=quantity,
+        )
+        for recipe_id in recipe_ids
+    ]
+    return build_shopping_list(evaluations, include_complete=include_complete)
+
+
+def _write_shopping_list(
+    report: ShoppingListReport,
+    *,
+    output_format: RecipeFormat,
+    output: Path | None,
+) -> None:
+    if output_format == "rich":
+        render_shopping_list(console, report)
+    elif output_format == "csv":
+        _write_or_print_csv(shopping_list_rows(report), output)
+    else:
+        _write_or_print_text(model_to_json(report), output)
 
 
 def _load_activity_statuses(
@@ -1523,6 +1672,9 @@ def _load_dashboard_payload(
     recurring_data: Path | None = None,
     wizard_vault_data: Path | None = None,
     starter_kit_sets: list[int] | None = None,
+    shopping_list_recipes: list[str] | None = None,
+    shopping_list_quantity: int = 1,
+    include_complete_shopping_list: bool = False,
     max_recommendations: int = 10,
 ) -> DashboardPayload:
     snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir, use_cache=use_cache)
@@ -1536,6 +1688,9 @@ def _load_dashboard_payload(
         recurring_data=recurring_data,
         wizard_vault_data=wizard_vault_data,
         starter_kit_sets=starter_kit_sets,
+        shopping_list_recipes=shopping_list_recipes,
+        shopping_list_quantity=shopping_list_quantity,
+        include_complete_shopping_list=include_complete_shopping_list,
         max_recommendations=max_recommendations,
     )
 
@@ -1550,6 +1705,9 @@ def _build_dashboard_payload_for_snapshot(
     recurring_data: Path | None = None,
     wizard_vault_data: Path | None = None,
     starter_kit_sets: list[int] | None = None,
+    shopping_list_recipes: list[str] | None = None,
+    shopping_list_quantity: int = 1,
+    include_complete_shopping_list: bool = False,
     max_recommendations: int = 10,
 ) -> DashboardPayload:
     summary = build_account_summary(snapshot, inventory)
@@ -1565,11 +1723,23 @@ def _build_dashboard_payload_for_snapshot(
         starter_kit_sets=starter_kit_sets,
         max_recommendations=max_recommendations,
     )
+    shopping_list = (
+        _build_shopping_list_report_for_snapshot(
+            snapshot,
+            inventory,
+            recipe_ids=shopping_list_recipes,
+            quantity=shopping_list_quantity,
+            include_complete=include_complete_shopping_list,
+        )
+        if shopping_list_recipes
+        else None
+    )
     return build_dashboard_payload(
         summary,
         focus_items=focus_items,
         activities=activities,
         progression_report=progression_report,
+        shopping_list=shopping_list,
         source_label=source_label,
     )
 

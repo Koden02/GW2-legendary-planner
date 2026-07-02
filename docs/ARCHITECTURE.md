@@ -119,6 +119,8 @@ The recipe engine has three separable pieces:
 - `RecipeProvider` loads recipe definitions from one source.
 - `RecipeRepository` indexes recipes by recipe id and output item/currency.
 - `RecipeEvaluator` evaluates a recipe against `AccountSnapshot` and `Inventory`.
+- `planner/shopping_list.py` aggregates recipe effective costs into a
+  price-free shopping list for one or more selected goals.
 
 Evaluation returns:
 
@@ -129,6 +131,9 @@ Evaluation returns:
 
 The evaluator does not query market prices and does not make recommendations.
 Those belong to later planner phases.
+
+Shopping-list generation consumes `RecipeEvaluation.costs`. It does not
+duplicate recipe traversal and it does not query trading-post or market prices.
 
 ## Activity Planners
 
@@ -215,7 +220,8 @@ flowchart LR
     HTML --> Server["Local preview server"]
 ```
 
-`gui/dashboard.py` owns the dashboard view model and HTML rendering.
-`gui/server.py` owns local preview serving. CLI commands may load account data
-and pass planner outputs into the GUI layer, but GUI code should not call GW2 API
-endpoints, parse inventory sources, or evaluate recipes directly.
+`gui/dashboard.py` owns the dashboard view model and HTML rendering, including
+optional shopping-list views supplied by the CLI. `gui/server.py` owns local
+preview serving. CLI commands may load account data and pass planner outputs into
+the GUI layer, but GUI code should not call GW2 API endpoints, parse inventory
+sources, or evaluate recipes directly.

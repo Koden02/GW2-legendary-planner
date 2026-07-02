@@ -23,9 +23,10 @@ shared subrecipes, API-verified shared crafting gift/component recipes, recipe
 data validation, CLI recipe reports, and source-context acquisition hints for
 high-signal terminal requirements.
 
-Intentionally deferred: dungeon gift planners, activity optimization,
-trading-post or market pricing, shopping lists, and recommendation scoring.
-Those belong to later phases.
+Intentionally deferred from Phase 2: dungeon gift planners, activity
+optimization, trading-post or market pricing, shopping lists, and recommendation
+scoring. Shopping lists and recommendation scoring are now handled by later
+phase work; pricing remains deferred.
 
 ## Phase 3: Legendary Activity Planners - Complete
 
@@ -79,9 +80,11 @@ should not infer current rotating objectives without verifiable source data.
 - Plugin system.
 
 Current scope: a desktop-ready browser dashboard is implemented as a GUI adapter
-over existing account summary, focus, activity, progression score, and
-recommendation outputs. It can be written as standalone HTML or served locally
-with `gw2planner gui serve`.
+over existing account summary, focus, activity, progression score,
+recommendation, and shopping-list outputs. It can be written as standalone HTML
+or served locally with `gw2planner gui serve`. Price-free shopping-list
+generation is available from recipe effective costs and can be exported as JSON
+or CSV.
 
-Next scope: native packaging, live synchronization UX, shopping-list views,
-market-price integration, multi-account profiles, and plugin loading.
+Next scope: native packaging, live synchronization UX, market-price integration,
+multi-account profiles, and plugin loading.

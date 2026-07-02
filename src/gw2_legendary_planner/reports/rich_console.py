@@ -16,6 +16,7 @@ from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation
 from gw2_legendary_planner.planner.recipe_validator import RecipeValidationReport
 from gw2_legendary_planner.planner.recipes import Recipe
 from gw2_legendary_planner.planner.recurring import RecurringTaskStatus
+from gw2_legendary_planner.planner.shopping_list import ShoppingListReport
 from gw2_legendary_planner.planner.starter_kits import StarterKitSetEvaluation
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultOptimizationReport,
@@ -457,6 +458,41 @@ def render_recipe_graph(console: Console, evaluation: RecipeEvaluation) -> None:
             child.kind,
             f"{child.quantity:,}",
             child.status,
+        )
+    console.print(table)
+
+
+def render_shopping_list(console: Console, report: ShoppingListReport) -> None:
+    summary = Table(title="Shopping List")
+    summary.add_column("Metric")
+    summary.add_column("Value", justify="right")
+    summary.add_row("Goals", f"{report.goal_count:,}")
+    summary.add_row("List entries", f"{report.entry_count:,}")
+    summary.add_row("Missing entries", f"{report.missing_entry_count:,}")
+    summary.add_row("Total missing quantity", f"{report.total_missing_quantity:,}")
+    console.print(summary)
+
+    if not report.entries:
+        console.print("[green]No missing effective costs for the selected recipes.[/green]")
+        return
+
+    table = Table(title="Missing Effective Costs")
+    table.add_column("Requirement")
+    table.add_column("Kind")
+    table.add_column("Required", justify="right")
+    table.add_column("Available", justify="right")
+    table.add_column("Missing", justify="right")
+    table.add_column("Acquisition")
+    table.add_column("Recipes")
+    for entry in report.entries:
+        table.add_row(
+            entry.name or str(entry.id),
+            entry.kind,
+            f"{entry.required_quantity:,}",
+            f"{entry.available_quantity:,}",
+            f"{entry.missing_quantity:,}",
+            entry.acquisition.label if entry.acquisition else "",
+            ", ".join(contribution.recipe_name for contribution in entry.contributions),
         )
     console.print(table)
 

@@ -45,6 +45,21 @@ high-signal generation-one requirements such as Gift of Battle, Gift of
 Exploration, Bloodstone Shard, Obsidian Shard, Icy Runestone, Mystic Clover, and
 Gift of Ascalon.
 
+## Shopping Lists
+
+Shopping lists are generated from recipe effective costs. They aggregate one or
+more selected recipe evaluations, count account inventory once against the
+combined target, and report missing quantities with acquisition hints.
+
+```powershell
+uv run gw2planner recipes shopping-list legendary.bolt --input ./exports/
+uv run gw2planner recipes shopping-list legendary.bolt legendary.twilight --input ./exports/ --format csv
+uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --format json
+```
+
+Shopping lists do not include trading-post prices, automatic vendor costs, or
+purchase optimization. Those belong to later market-data work.
+
 ## Current Limits
 
 Top-level legendary recipes recurse into `Gift of Mastery`, `Gift of Fortune`,

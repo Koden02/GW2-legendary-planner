@@ -56,6 +56,13 @@ from gw2_legendary_planner.planner.recurring import (
     load_recurring_task_definitions,
     load_recurring_task_definitions_from_path,
 )
+from gw2_legendary_planner.planner.shopping_list import (
+    ShoppingListContribution,
+    ShoppingListEntry,
+    ShoppingListGoal,
+    ShoppingListReport,
+    build_shopping_list,
+)
 from gw2_legendary_planner.planner.starter_kits import (
     StarterKitOptionEvaluation,
     StarterKitSet,
@@ -106,6 +113,10 @@ __all__ = [
     "RecipeValidator",
     "RecurringTaskDefinition",
     "RecurringTaskStatus",
+    "ShoppingListContribution",
+    "ShoppingListEntry",
+    "ShoppingListGoal",
+    "ShoppingListReport",
     "StarterKitOptionEvaluation",
     "StarterKitSet",
     "StarterKitSetEvaluation",
@@ -120,6 +131,7 @@ __all__ = [
     "build_activity_report",
     "build_legendary_focus_report",
     "build_recurring_task_report",
+    "build_shopping_list",
     "evaluate_collections",
     "evaluate_starter_kit_set",
     "evaluate_starter_kit_sets",

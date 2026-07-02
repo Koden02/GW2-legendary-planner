@@ -15,6 +15,7 @@ from gw2_legendary_planner.planner.progression import (
     AccountRecommendation,
     ProgressionScoreComponent,
 )
+from gw2_legendary_planner.planner.shopping_list import ShoppingListReport
 from gw2_legendary_planner.reports.summary import AccountSummary
 
 DashboardTone = Literal["neutral", "good", "warning", "critical", "info"]
@@ -42,6 +43,7 @@ class DashboardPayload(BaseModel):
     score_percent: float | None = None
     score_components: list[ProgressionScoreComponent] = Field(default_factory=list)
     recommendations: list[AccountRecommendation] = Field(default_factory=list)
+    shopping_list: ShoppingListReport | None = None
     focus_items: list[FocusEntry] = Field(default_factory=list)
     activities: list[ActivityGoalStatus] = Field(default_factory=list)
 
@@ -52,6 +54,7 @@ def build_dashboard_payload(
     focus_items: list[FocusEntry],
     activities: list[ActivityGoalStatus],
     progression_report: AccountProgressionReport | None = None,
+    shopping_list: ShoppingListReport | None = None,
     source_label: str = "account data",
     generated_at: datetime | None = None,
 ) -> DashboardPayload:
@@ -71,6 +74,7 @@ def build_dashboard_payload(
         ),
         score_components=progression_report.score.components if progression_report else [],
         recommendations=progression_report.recommendations if progression_report else [],
+        shopping_list=shopping_list,
         focus_items=visible_focus_items,
         activities=activities,
     )
@@ -122,6 +126,9 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
       <button class="tab" type="button" data-panel-target="recommendations">
         Recommendations
       </button>
+      <button class="tab" type="button" data-panel-target="shopping-list">
+        Shopping List
+      </button>
       <button class="tab" type="button" data-panel-target="materials">
         Materials
       </button>
@@ -170,6 +177,14 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
           >
         </div>
         {_render_recommendations(payload.recommendations)}
+      </section>
+
+      <section class="panel" data-panel="shopping-list">
+        <div class="section-heading">
+          <p class="eyebrow">Crafting Targets</p>
+          <h2>Shopping List</h2>
+        </div>
+        {_render_shopping_list(payload.shopping_list)}
       </section>
 
       <section class="panel" data-panel="materials">
@@ -329,6 +344,56 @@ def _render_recommendations(recommendations: list[AccountRecommendation]) -> str
     """
 
 
+def _render_shopping_list(report: ShoppingListReport | None) -> str:
+    if report is None:
+        return _empty_state("Add --shopping-list-recipe to include crafting targets.")
+    if not report.entries:
+        return _empty_state("No missing effective costs for the selected recipes.")
+    rows = []
+    for entry in report.entries:
+        rows.append(
+            f"""
+            <tr>
+              <td>
+                <strong>{escape(entry.name or str(entry.id))}</strong>
+                <span>{escape(str(entry.id))}</span>
+              </td>
+              <td>{escape(entry.kind)}</td>
+              <td class="numeric">{entry.required_quantity:,}</td>
+              <td class="numeric">{entry.available_quantity:,}</td>
+              <td class="numeric">{entry.missing_quantity:,}</td>
+              <td>{escape(entry.acquisition.label if entry.acquisition else "-")}</td>
+              <td>{escape(_format_contributions(entry.contributions))}</td>
+            </tr>
+            """
+        )
+    return f"""
+        <div class="summary-strip">
+          <span>{report.goal_count:,} goals</span>
+          <span>{report.missing_entry_count:,} missing entries</span>
+          <span>{report.total_missing_quantity:,} total missing quantity</span>
+        </div>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>Requirement</th>
+                <th>Kind</th>
+                <th class="numeric">Required</th>
+                <th class="numeric">Available</th>
+                <th class="numeric">Missing</th>
+                <th>Acquisition</th>
+                <th>Recipes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {"".join(rows)}
+            </tbody>
+          </table>
+        </div>
+    """
+
+
 def _render_focus_items(items: list[FocusEntry]) -> str:
     if not items:
         return _empty_state("No focus items are present in the loaded account data.")
@@ -414,6 +479,15 @@ def _format_locations(locations) -> str:
     return "; ".join(
         f"{location.source} x{location.quantity:,}"
         for location in locations
+    )
+
+
+def _format_contributions(contributions) -> str:
+    if not contributions:
+        return "-"
+    return "; ".join(
+        f"{contribution.recipe_name} x{contribution.required_quantity:,}"
+        for contribution in contributions
     )
 
 
@@ -749,6 +823,23 @@ input[type="search"]:focus {
 
 .table-shell {
   overflow: auto;
+}
+
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.summary-strip span {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 table {

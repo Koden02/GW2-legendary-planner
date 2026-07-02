@@ -20,6 +20,7 @@ from gw2_legendary_planner.planner.recurring import (
     build_recurring_task_report,
     load_recurring_task_definitions_from_path,
 )
+from gw2_legendary_planner.planner.shopping_list import build_shopping_list
 from gw2_legendary_planner.planner.starter_kits import evaluate_starter_kit_sets
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultReward,
@@ -39,6 +40,7 @@ from gw2_legendary_planner.reports.exporters import (
     recommendation_rows,
     recurring_task_rows,
     rows_to_csv,
+    shopping_list_rows,
     starter_kit_rows,
     summary_rows,
     wizard_vault_optimization_rows,
@@ -103,6 +105,22 @@ def test_recipe_cost_rows_can_filter_missing_only() -> None:
     icy_runestone = next(row for row in rows if row["name"] == "Icy Runestone")
     assert icy_runestone["acquisition"] == "Vendor purchase"
     assert icy_runestone["source_url"] == "https://wiki.guildwars2.com/wiki/Icy_Runestone"
+
+
+def test_shopping_list_rows_are_flat() -> None:
+    snapshot = LocalExportLoader(FIXTURE_DIR).load()
+    inventory = InventoryAggregator().aggregate(snapshot)
+    repository = get_default_recipe_repository()
+    recipe = repository.get_recipe("legendary.bolt")
+    assert recipe is not None
+
+    evaluation = RecipeEvaluator(repository).evaluate(recipe, snapshot, inventory)
+    rows = shopping_list_rows(build_shopping_list([evaluation]))
+    by_name = {row["name"]: row for row in rows}
+
+    assert by_name["Mystic Clover"]["missing_quantity"] == 65
+    assert by_name["Icy Runestone"]["acquisition"] == "Vendor purchase"
+    assert by_name["Mystic Clover"]["contributing_recipes"] == "legendary.bolt"
 
 
 def test_activity_rows_are_flat() -> None:

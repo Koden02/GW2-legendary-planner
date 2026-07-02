@@ -23,6 +23,7 @@ from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluation
 from gw2_legendary_planner.planner.recipe_validator import RecipeValidationReport
 from gw2_legendary_planner.planner.recipes import Recipe
 from gw2_legendary_planner.planner.recurring import RecurringTaskStatus
+from gw2_legendary_planner.planner.shopping_list import ShoppingListReport
 from gw2_legendary_planner.planner.starter_kits import StarterKitSetEvaluation
 from gw2_legendary_planner.planner.wizards_vault import (
     WizardVaultOptimizationReport,
@@ -505,6 +506,28 @@ def recipe_graph_rows(evaluation: RecipeEvaluation) -> list[dict[str, str | int]
             "status": nodes_by_id[edge.child_id].status,
         }
         for edge in evaluation.dependency_graph.edges
+    ]
+
+
+def shopping_list_rows(report: ShoppingListReport) -> list[dict[str, str | int | float]]:
+    return [
+        {
+            "kind": entry.kind,
+            "id": entry.id,
+            "name": entry.name or "",
+            "required_quantity": entry.required_quantity,
+            "available_quantity": entry.available_quantity,
+            "missing_quantity": entry.missing_quantity,
+            "readiness_percent": entry.readiness_percent,
+            "acquisition": entry.acquisition.label if entry.acquisition else "",
+            "acquisition_kind": entry.acquisition.kind if entry.acquisition else "",
+            "acquisition_note": entry.acquisition.note if entry.acquisition else "",
+            "source_url": entry.acquisition.source_url if entry.acquisition else "",
+            "contributing_recipes": ",".join(
+                contribution.recipe_id for contribution in entry.contributions
+            ),
+        }
+        for entry in report.entries
     ]
 
 

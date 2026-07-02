@@ -52,6 +52,7 @@ uv run gw2planner recipes list
 uv run gw2planner recipes list --tag generation_1 --tag weapon
 uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exports
 uv run gw2planner recipes evaluate legendary.twilight --input tests/fixtures/exports --missing-only
+uv run gw2planner recipes shopping-list legendary.bolt legendary.twilight --input tests/fixtures/exports
 uv run gw2planner recipes validate
 uv run gw2planner activities report --input tests/fixtures/exports
 uv run gw2planner activities collections --input tests/fixtures/exports --data tests/fixtures/collections/sample_collections.json
@@ -73,8 +74,9 @@ uv run gw2planner export wizard-vault-optimization --input tests/fixtures/export
 uv run gw2planner export achievements --input tests/fixtures/exports --data tests/fixtures/achievements/sample_achievements.json --format csv
 uv run gw2planner export recurring --input tests/fixtures/exports --data tests/fixtures/recurring/sample_tasks.json --format csv
 uv run gw2planner export progression --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --format json
-uv run gw2planner gui build --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --output gw2planner-dashboard.html
-uv run gw2planner gui serve --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --port 8765
+uv run gw2planner export shopping-list legendary.bolt --input tests/fixtures/exports --format csv
+uv run gw2planner gui build --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --shopping-list-recipe legendary.bolt --output gw2planner-dashboard.html
+uv run gw2planner gui serve --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --shopping-list-recipe legendary.bolt --port 8765
 uv run gw2planner doctor --input tests/fixtures/exports
 ```
 

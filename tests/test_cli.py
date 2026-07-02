@@ -165,6 +165,32 @@ def test_cli_export_progression_json_success() -> None:
     )
 
 
+def test_cli_export_shopping_list_json_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            "shopping-list",
+            "legendary.bolt",
+            "legendary.twilight",
+            "--input",
+            str(FIXTURE_DIR),
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    entries = {entry["name"]: entry for entry in payload["entries"]}
+    assert payload["goal_count"] == 2
+    assert entries["Mystic Clover"]["missing_quantity"] == 142
+    assert {goal["recipe_id"] for goal in payload["goals"]} == {
+        "legendary.bolt",
+        "legendary.twilight",
+    }
+
+
 def test_cli_export_starter_kits_success() -> None:
     result = runner.invoke(
         app,
@@ -252,6 +278,8 @@ def test_cli_gui_build_success(tmp_path: Path) -> None:
             str(COLLECTION_FIXTURE),
             "--recurring-data",
             str(RECURRING_FIXTURE),
+            "--shopping-list-recipe",
+            "legendary.bolt",
             "--output",
             str(output),
         ],
@@ -262,6 +290,8 @@ def test_cli_gui_build_success(tmp_path: Path) -> None:
     assert "Dashboard written" in result.output
     assert "Example.1234" in html
     assert "Recommendation Engine" in html
+    assert "Shopping List" in html
+    assert "Mystic Clover" in html
     assert "Sample Weekly Achievement Progress" in html
 
 
@@ -448,6 +478,38 @@ def test_cli_recipes_evaluate_missing_only_json_success() -> None:
         ]["label"]
         == "Vendor purchase"
     )
+
+
+def test_cli_recipes_shopping_list_success() -> None:
+    result = runner.invoke(
+        app,
+        ["recipes", "shopping-list", "legendary.bolt", "--input", str(FIXTURE_DIR)],
+    )
+
+    assert result.exit_code == 0
+    assert "Shopping List" in result.output
+    assert "Missing Effective Costs" in result.output
+    assert "65" in result.output
+
+
+def test_cli_recipes_shopping_list_csv_success() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "recipes",
+            "shopping-list",
+            "legendary.bolt",
+            "--input",
+            str(FIXTURE_DIR),
+            "--format",
+            "csv",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "missing_quantity" in result.output
+    assert "Mystic Clover" in result.output
+    assert "legendary.bolt" in result.output
 
 
 def test_cli_recipes_validate_success() -> None:

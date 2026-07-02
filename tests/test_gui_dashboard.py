@@ -23,11 +23,13 @@ from gw2_legendary_planner.planner.collections import (
 )
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
 from gw2_legendary_planner.planner.progression import build_account_progression_report
+from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
 from gw2_legendary_planner.planner.recurring import (
     build_recurring_task_report,
     load_recurring_task_definitions_from_path,
 )
+from gw2_legendary_planner.planner.shopping_list import build_shopping_list
 from gw2_legendary_planner.reports.summary import build_account_summary
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "exports"
@@ -47,6 +49,8 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert payload.score_percent is not None
     assert "Example.1234" in html
     assert "Recommendation Engine" in html
+    assert "Shopping List" in html
+    assert "Mystic Clover" in html
     assert "Sample Weekly Achievement Progress" in html
     assert "Gift of Battle" in html
     assert 'data-panel-target="recommendations"' in html
@@ -111,11 +115,17 @@ def _sample_dashboard_payload():
         collection_progress=collections,
         recurring_tasks=recurring,
     )
+    bolt = get_default_recipe_repository().get_recipe("legendary.bolt")
+    assert bolt is not None
+    shopping_list = build_shopping_list(
+        [RecipeEvaluator(get_default_recipe_repository()).evaluate(bolt, snapshot, inventory)]
+    )
     return build_dashboard_payload(
         summary,
         focus_items=focus_items,
         activities=activities,
         progression_report=progression,
+        shopping_list=shopping_list,
         source_label="fixtures",
         generated_at=datetime(2026, 7, 2, 12, 0, tzinfo=UTC),
     )
