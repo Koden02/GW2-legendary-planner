@@ -331,6 +331,13 @@ def test_cli_gui_build_can_include_shopping_list_prices(tmp_path: Path, monkeypa
         "gw2_legendary_planner.cli._price_shopping_list_report",
         fake_price_report,
     )
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli._price_goal_shopping_list_reports",
+        lambda reports_by_recipe, *, use_cache=True: {
+            recipe_id: fake_price_report(report, use_cache=use_cache)
+            for recipe_id, report in reports_by_recipe.items()
+        },
+    )
 
     output = tmp_path / "dashboard.html"
     result = runner.invoke(

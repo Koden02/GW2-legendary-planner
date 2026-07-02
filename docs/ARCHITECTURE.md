@@ -159,6 +159,8 @@ The recipe engine has three separable pieces:
   price-free shopping list for one or more selected goals.
 - `planner/market.py` can optionally enrich a shopping list with commerce
   prices without changing recipe evaluation.
+- `planner/goal_comparison.py` summarizes evaluated recipes for user-selected
+  current goals without feeding those choices back into recommendation ranking.
 
 Evaluation returns:
 
@@ -173,6 +175,8 @@ Those belong to later planner phases.
 Shopping-list generation consumes `RecipeEvaluation.costs`. It does not
 duplicate recipe traversal and it does not query trading-post or market prices.
 Market enrichment is a separate opt-in pass over the finished shopping list.
+Goal comparison consumes the same evaluated costs to support user-directed
+planning and side-by-side dashboard comparisons.
 
 ## Activity Planners
 

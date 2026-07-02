@@ -9,6 +9,10 @@ from pydantic import BaseModel, Field
 
 from gw2_legendary_planner import __version__
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
+from gw2_legendary_planner.planner.goal_comparison import (
+    GoalComparisonReport,
+    GoalRequirementComparison,
+)
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
 from gw2_legendary_planner.planner.market import (
     ShoppingListPriceEntry,
@@ -65,6 +69,7 @@ class DashboardPayload(BaseModel):
     score_percent: float | None = None
     score_components: list[ProgressionScoreComponent] = Field(default_factory=list)
     recommendations: list[AccountRecommendation] = Field(default_factory=list)
+    goal_comparison_report: GoalComparisonReport | None = None
     shopping_list: ShoppingListReport | None = None
     shopping_list_prices: ShoppingListPriceReport | None = None
     focus_items: list[FocusEntry] = Field(default_factory=list)
@@ -77,6 +82,7 @@ def build_dashboard_payload(
     focus_items: list[FocusEntry],
     activities: list[ActivityGoalStatus],
     progression_report: AccountProgressionReport | None = None,
+    goal_comparison_report: GoalComparisonReport | None = None,
     shopping_list: ShoppingListReport | None = None,
     shopping_list_prices: ShoppingListPriceReport | None = None,
     source_label: str = "account data",
@@ -102,6 +108,7 @@ def build_dashboard_payload(
         ),
         score_components=progression_report.score.components if progression_report else [],
         recommendations=progression_report.recommendations if progression_report else [],
+        goal_comparison_report=goal_comparison_report,
         shopping_list=shopping_list,
         shopping_list_prices=shopping_list_prices,
         focus_items=visible_focus_items,
@@ -157,6 +164,17 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         data-panel-target="overview"
       >
         Overview
+      </button>
+      <button
+        id="tab-current-goals"
+        class="tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-current-goals"
+        data-panel-target="current-goals"
+      >
+        Current Goals
       </button>
       <button
         id="tab-recommendations"
@@ -234,6 +252,29 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
           </div>
           {_render_score_components(payload.score_components)}
         </section>
+      </section>
+
+      <section
+        id="panel-current-goals"
+        class="panel"
+        data-panel="current-goals"
+        role="tabpanel"
+        aria-labelledby="tab-current-goals"
+        hidden
+      >
+        <div class="section-heading row-heading">
+          <div>
+            <p class="eyebrow">Current Goals</p>
+            <h2>Goal Comparison</h2>
+          </div>
+          <input
+            id="goal-filter"
+            type="search"
+            placeholder="Filter goals"
+            aria-label="Filter goals"
+          >
+        </div>
+        {_render_current_goals(payload.goal_comparison_report)}
       </section>
 
       <section
@@ -524,6 +565,113 @@ def _render_recommendations(recommendations: list[AccountRecommendation]) -> str
     """
 
 
+def _render_current_goals(report: GoalComparisonReport | None) -> str:
+    if report is None or not report.goals:
+        return _empty_state("No legendary goal comparisons are available for this snapshot.")
+    selected_ids = set(report.selected_goal_ids)
+    picker_rows = []
+    comparison_rows = []
+    for goal in report.goals:
+        is_selected = goal.recipe_id in selected_ids
+        checked = " checked" if is_selected else ""
+        search_text = " ".join([goal.recipe_id, goal.recipe_name, *goal.tags]).lower()
+        picker_rows.append(
+            f"""
+            <label class="goal-picker-row" data-goal-picker-row
+              data-search="{escape(search_text, quote=True)}">
+              <input
+                type="checkbox"
+                data-goal-toggle
+                value="{escape(goal.recipe_id, quote=True)}"
+                {checked}
+              >
+              <span>
+                <strong>{escape(goal.recipe_name)}</strong>
+                <small>{escape(goal.recipe_id)}</small>
+              </span>
+              <b>{goal.readiness_percent:.0f}%</b>
+            </label>
+            """
+        )
+        comparison_rows.append(
+            f"""
+            <tr data-goal-comparison-row data-goal-id="{escape(goal.recipe_id, quote=True)}">
+              <td>
+                <strong>{escape(goal.recipe_name)}</strong>
+                <span>{escape(goal.recipe_id)}</span>
+              </td>
+              <td class="numeric">{goal.readiness_percent:.2f}%</td>
+              <td class="numeric">{goal.account_bound_missing_entries:,}</td>
+              <td class="numeric">{goal.manual_missing_entries:,}</td>
+              <td class="numeric">{goal.tradeable_missing_entries:,}</td>
+              <td class="numeric">{escape(_format_optional_copper(goal.estimated_buy_cost))}</td>
+              <td>{escape(_format_goal_missing_requirements(goal.missing_requirements))}</td>
+              <td>{escape(goal.recommended_action)}</td>
+            </tr>
+            """
+        )
+    return f"""
+        <div class="current-goals-grid" data-current-goals>
+          <section class="goal-picker" aria-label="Available legendary goals">
+            <div class="goal-picker-list">
+              {"".join(picker_rows)}
+            </div>
+          </section>
+          <section class="goal-comparison" aria-label="Selected goal comparison">
+            <div class="summary-strip current-goals-summary">
+              <span><b data-selected-goal-count>0</b> selected</span>
+              <span><b data-selected-readiness>-</b> average readiness</span>
+              <span><b data-selected-bound>0</b> bound</span>
+              <span><b data-selected-manual>0</b> manual</span>
+              <span><b data-selected-tradeable>0</b> tradeable</span>
+              <span><b data-selected-price>-</b> estimated buy</span>
+            </div>
+            <div class="table-shell">
+              <table class="goal-comparison-table">
+                <thead>
+                  <tr>
+                    <th>Goal</th>
+                    <th class="numeric">Ready</th>
+                    <th class="numeric">Bound</th>
+                    <th class="numeric">Manual</th>
+                    <th class="numeric">Tradeable</th>
+                    <th class="numeric">Est. Buy</th>
+                    <th>Missing Focus</th>
+                    <th>Next Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {"".join(comparison_rows)}
+                </tbody>
+              </table>
+            </div>
+            <div class="empty-state current-goals-empty" data-current-goals-empty hidden>
+              <strong>No current goals selected.</strong>
+            </div>
+            <section class="shared-requirements" aria-label="Shared missing materials">
+              <div class="section-heading">
+                <p class="eyebrow">Shared Materials</p>
+                <h2>Overlap</h2>
+              </div>
+              <div class="table-shell">
+                <table class="shared-requirements-table">
+                  <thead>
+                    <tr>
+                      <th>Requirement</th>
+                      <th class="numeric">Missing</th>
+                      <th>Category</th>
+                      <th>Goals</th>
+                    </tr>
+                  </thead>
+                  <tbody data-shared-requirements-body></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+        </div>
+    """
+
+
 def _render_shopping_list(
     report: ShoppingListReport | None,
     price_report: ShoppingListPriceReport | None,
@@ -716,10 +864,37 @@ def _render_activities(activities: list[ActivityGoalStatus]) -> str:
 def _format_locations(locations) -> str:
     if not locations:
         return "-"
-    return "; ".join(
-        f"{location.source} x{location.quantity:,}"
-        for location in locations
+    return "; ".join(_format_location(location) for location in locations)
+
+
+def _format_location(location) -> str:
+    label = location.source
+    details = []
+    if getattr(location, "character", None):
+        details.append(location.character)
+    if getattr(location, "bag_index", None) is not None:
+        details.append(f"bag {location.bag_index}")
+    if getattr(location, "slot", None) is not None:
+        details.append(f"slot {location.slot}")
+    if details:
+        label = f"{label} ({', '.join(str(detail) for detail in details)})"
+    return f"{label} x{location.quantity:,}"
+
+
+def _format_goal_missing_requirements(
+    requirements: list[GoalRequirementComparison],
+) -> str:
+    if not requirements:
+        return "No missing requirements."
+    shown = requirements[:3]
+    text = "; ".join(
+        f"{requirement.name or requirement.id} x{requirement.missing_quantity:,}"
+        for requirement in shown
     )
+    remaining_count = len(requirements) - len(shown)
+    if remaining_count > 0:
+        text = f"{text}; {remaining_count:,} more"
+    return text
 
 
 def _format_contributions(contributions) -> str:
@@ -1202,6 +1377,96 @@ input[type="search"]:focus {
   font-weight: 700;
 }
 
+.current-goals-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(520px, 1.55fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.goal-picker,
+.shared-requirements {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.goal-picker {
+  max-height: 660px;
+  overflow: auto;
+  scrollbar-color: var(--line) transparent;
+}
+
+.goal-picker-list {
+  display: grid;
+  gap: 0;
+}
+
+.goal-picker-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 58px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.goal-picker-row:last-child {
+  border-bottom: 0;
+}
+
+.goal-picker-row:hover,
+.goal-picker-row:has(input:checked) {
+  background: #f1f6f2;
+}
+
+.goal-picker-row input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.goal-picker-row span {
+  min-width: 0;
+}
+
+.goal-picker-row strong,
+.goal-picker-row small {
+  display: block;
+}
+
+.goal-picker-row strong {
+  overflow-wrap: anywhere;
+}
+
+.goal-picker-row small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.goal-picker-row b {
+  color: var(--accent-strong);
+}
+
+.goal-comparison {
+  min-width: 0;
+}
+
+.current-goals-summary b {
+  color: var(--text);
+}
+
+.current-goals-empty {
+  margin-top: 12px;
+}
+
+.shared-requirements {
+  margin-top: 16px;
+  padding: 16px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1312,6 +1577,7 @@ td strong {
 
   .overview-grid,
   .metric-grid,
+  .current-goals-grid,
   .component-row {
     grid-template-columns: 1fr;
   }
@@ -1353,17 +1619,22 @@ _DASHBOARD_JS = """
     return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
   }
 
-  function readInitialSyncStatus() {
+  function readDashboardPayload() {
     const data = document.querySelector("#dashboard-data");
     if (!data || !data.textContent) {
       return {};
     }
     try {
-      const payload = JSON.parse(data.textContent);
-      return payload.sync_status || {};
+      return JSON.parse(data.textContent);
     } catch (error) {
       return {};
     }
+  }
+
+  const dashboardPayload = readDashboardPayload();
+
+  function readInitialSyncStatus() {
+    return dashboardPayload.sync_status || {};
   }
 
   function applySyncStatus(status) {
@@ -1508,27 +1779,227 @@ _DASHBOARD_JS = """
     });
   }
 
-  const filter = document.querySelector("#recommendation-filter");
+  const recommendationFilter = document.querySelector("#recommendation-filter");
   const rows = Array.from(document.querySelectorAll("[data-recommendation-row]"));
   const noRecommendationMatches = document.querySelector("[data-recommendation-empty]");
-  if (!filter || rows.length === 0) {
-    return;
-  }
-
-  filter.addEventListener("input", () => {
-    const query = filter.value.trim().toLowerCase();
-    let visibleCount = 0;
-    rows.forEach((row) => {
-      const haystack = row.getAttribute("data-search") || "";
-      const isHidden = query.length > 0 && !haystack.includes(query);
-      row.hidden = isHidden;
-      if (!isHidden) {
-        visibleCount += 1;
+  if (recommendationFilter && rows.length > 0) {
+    recommendationFilter.addEventListener("input", () => {
+      const query = recommendationFilter.value.trim().toLowerCase();
+      let visibleCount = 0;
+      rows.forEach((row) => {
+        const haystack = row.getAttribute("data-search") || "";
+        const isHidden = query.length > 0 && !haystack.includes(query);
+        row.hidden = isHidden;
+        if (!isHidden) {
+          visibleCount += 1;
+        }
+      });
+      if (noRecommendationMatches) {
+        noRecommendationMatches.hidden = query.length === 0 || visibleCount > 0;
       }
     });
-    if (noRecommendationMatches) {
-      noRecommendationMatches.hidden = query.length === 0 || visibleCount > 0;
+  }
+
+  function formatNumber(value) {
+    return new Intl.NumberFormat("en-US").format(value || 0);
+  }
+
+  function formatPercent(value) {
+    if (value == null || Number.isNaN(Number(value))) {
+      return "-";
     }
-  });
+    return `${Number(value).toFixed(0)}%`;
+  }
+
+  function formatCopper(value) {
+    if (value == null) {
+      return "-";
+    }
+    const total = Number(value);
+    const gold = Math.floor(total / 10000);
+    const silver = Math.floor((total % 10000) / 100);
+    const copper = total % 100;
+    const silverText = String(silver).padStart(2, "0");
+    const copperText = String(copper).padStart(2, "0");
+    return `${formatNumber(gold)}g ${silverText}s ${copperText}c`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function categoryLabel(value) {
+    return String(value || "").replaceAll("_", " ");
+  }
+
+  function setupCurrentGoals() {
+    const report = dashboardPayload.goal_comparison_report;
+    const root = document.querySelector("[data-current-goals]");
+    if (!root || !report || !Array.isArray(report.goals)) {
+      return;
+    }
+
+    const availableIds = new Set(report.goals.map((goal) => goal.recipe_id));
+    const storageKey = `gw2planner.currentGoals.${dashboardPayload.account_name || "account"}`;
+    const toggles = Array.from(document.querySelectorAll("[data-goal-toggle]"));
+    const pickerRows = Array.from(document.querySelectorAll("[data-goal-picker-row]"));
+    const comparisonRows = Array.from(document.querySelectorAll("[data-goal-comparison-row]"));
+    const goalFilter = document.querySelector("#goal-filter");
+    const emptyState = document.querySelector("[data-current-goals-empty]");
+    const sharedBody = document.querySelector("[data-shared-requirements-body]");
+    const selectedCount = document.querySelector("[data-selected-goal-count]");
+    const selectedReadiness = document.querySelector("[data-selected-readiness]");
+    const selectedBound = document.querySelector("[data-selected-bound]");
+    const selectedManual = document.querySelector("[data-selected-manual]");
+    const selectedTradeable = document.querySelector("[data-selected-tradeable]");
+    const selectedPrice = document.querySelector("[data-selected-price]");
+
+    function defaultSelectedIds() {
+      return (report.selected_goal_ids || []).filter((goalId) => availableIds.has(goalId));
+    }
+
+    function readSelectedIds() {
+      try {
+        const stored = JSON.parse(window.localStorage.getItem(storageKey) || "null");
+        if (Array.isArray(stored)) {
+          return stored.filter((goalId) => availableIds.has(goalId));
+        }
+      } catch (error) {
+        return defaultSelectedIds();
+      }
+      return defaultSelectedIds();
+    }
+
+    let selectedIds = new Set(readSelectedIds());
+
+    function selectedGoals() {
+      return report.goals.filter((goal) => selectedIds.has(goal.recipe_id));
+    }
+
+    function writeSelectedIds() {
+      window.localStorage.setItem(storageKey, JSON.stringify(Array.from(selectedIds)));
+    }
+
+    function updateSummary(goals) {
+      const count = goals.length;
+      const readiness = count
+        ? goals.reduce((total, goal) => total + goal.readiness_percent, 0) / count
+        : null;
+      const bound = goals.reduce(
+        (total, goal) => total + goal.account_bound_missing_entries,
+        0
+      );
+      const manual = goals.reduce((total, goal) => total + goal.manual_missing_entries, 0);
+      const tradeable = goals.reduce(
+        (total, goal) => total + goal.tradeable_missing_entries,
+        0
+      );
+      const pricedGoals = goals.filter((goal) => goal.estimated_buy_cost != null);
+      const price = pricedGoals.length
+        ? pricedGoals.reduce((total, goal) => total + goal.estimated_buy_cost, 0)
+        : null;
+
+      if (selectedCount) selectedCount.textContent = formatNumber(count);
+      if (selectedReadiness) selectedReadiness.textContent = formatPercent(readiness);
+      if (selectedBound) selectedBound.textContent = formatNumber(bound);
+      if (selectedManual) selectedManual.textContent = formatNumber(manual);
+      if (selectedTradeable) selectedTradeable.textContent = formatNumber(tradeable);
+      if (selectedPrice) selectedPrice.textContent = formatCopper(price);
+    }
+
+    function updateSharedRequirements(goals) {
+      if (!sharedBody) {
+        return;
+      }
+      const shared = new Map();
+      goals.forEach((goal) => {
+        (goal.missing_requirements || []).forEach((requirement) => {
+          if (requirement.kind !== "item" || requirement.missing_quantity <= 0) {
+            return;
+          }
+          const key = `${requirement.kind}:${requirement.id}`;
+          const entry = shared.get(key) || {
+            name: requirement.name || requirement.id,
+            category: requirement.category,
+            total: 0,
+            goals: [],
+          };
+          entry.total += requirement.missing_quantity;
+          entry.goals.push(goal.recipe_name);
+          shared.set(key, entry);
+        });
+      });
+      const rows = Array.from(shared.values())
+        .filter((entry) => new Set(entry.goals).size > 1)
+        .sort((left, right) => (
+          right.total - left.total
+          || String(left.name).localeCompare(String(right.name))
+        ));
+
+      if (rows.length === 0) {
+        sharedBody.innerHTML = `
+          <tr>
+            <td colspan="4">No shared missing item requirements for the selected goals.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      sharedBody.innerHTML = rows.map((entry) => `
+        <tr>
+          <td><strong>${escapeHtml(entry.name)}</strong></td>
+          <td class="numeric">${formatNumber(entry.total)}</td>
+          <td>${escapeHtml(categoryLabel(entry.category))}</td>
+          <td>${escapeHtml(Array.from(new Set(entry.goals)).join(", "))}</td>
+        </tr>
+      `).join("");
+    }
+
+    function applySelection() {
+      const goals = selectedGoals();
+      toggles.forEach((toggle) => {
+        toggle.checked = selectedIds.has(toggle.value);
+      });
+      comparisonRows.forEach((row) => {
+        const goalId = row.getAttribute("data-goal-id");
+        row.hidden = !goalId || !selectedIds.has(goalId);
+      });
+      if (emptyState) {
+        emptyState.hidden = goals.length > 0;
+      }
+      updateSummary(goals);
+      updateSharedRequirements(goals);
+      writeSelectedIds();
+    }
+
+    toggles.forEach((toggle) => {
+      toggle.addEventListener("change", () => {
+        if (toggle.checked) {
+          selectedIds.add(toggle.value);
+        } else {
+          selectedIds.delete(toggle.value);
+        }
+        applySelection();
+      });
+    });
+
+    if (goalFilter) {
+      goalFilter.addEventListener("input", () => {
+        const query = goalFilter.value.trim().toLowerCase();
+        pickerRows.forEach((row) => {
+          const haystack = row.getAttribute("data-search") || "";
+          row.hidden = query.length > 0 && !haystack.includes(query);
+        });
+      });
+    }
+    applySelection();
+  }
+
+  setupCurrentGoals();
 })();
 """

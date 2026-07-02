@@ -52,9 +52,22 @@ def render_focus_report(console: Console, entries: list[FocusEntry]) -> None:
     for entry in entries:
         if not entry.is_present:
             continue
-        locations = ", ".join(sorted({location.source for location in entry.locations})) or "wallet"
+        locations = _format_locations(entry.locations)
         table.add_row(entry.name, entry.category, f"{entry.quantity:,}", locations)
     console.print(table)
+
+
+def _format_locations(locations) -> str:
+    if not locations:
+        return "wallet"
+    return ", ".join(_format_location(location) for location in locations)
+
+
+def _format_location(location) -> str:
+    label = location.source
+    if location.character:
+        label = f"{label} ({location.character})"
+    return label
 
 
 def render_activity_report(console: Console, statuses: list[ActivityGoalStatus]) -> None:

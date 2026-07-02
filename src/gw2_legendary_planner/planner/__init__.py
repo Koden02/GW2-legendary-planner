@@ -23,6 +23,12 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions,
     load_collection_definitions_from_path,
 )
+from gw2_legendary_planner.planner.goal_comparison import (
+    GoalComparison,
+    GoalComparisonReport,
+    GoalRequirementComparison,
+    build_goal_comparison_report,
+)
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
 from gw2_legendary_planner.planner.progression import (
     AccountProgressionReport,
@@ -102,6 +108,9 @@ __all__ = [
     "DependencyGraph",
     "DependencyNode",
     "Goal",
+    "GoalComparison",
+    "GoalComparisonReport",
+    "GoalRequirementComparison",
     "ProgressionScoreComponent",
     "ProgressionScoreReport",
     "Recipe",
@@ -129,6 +138,7 @@ __all__ = [
     "build_account_progression_report",
     "build_achievement_report",
     "build_activity_report",
+    "build_goal_comparison_report",
     "build_legendary_focus_report",
     "build_recurring_task_report",
     "build_shopping_list",

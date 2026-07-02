@@ -24,6 +24,7 @@ from gw2_legendary_planner.planner.collections import (
     evaluate_collections,
     load_collection_definitions_from_path,
 )
+from gw2_legendary_planner.planner.goal_comparison import build_goal_comparison_report
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
 from gw2_legendary_planner.planner.market import price_shopping_list
 from gw2_legendary_planner.planner.progression import build_account_progression_report
@@ -53,6 +54,8 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert payload.score_percent is not None
     assert "Example.1234" in html
     assert "Recommendation Engine" in html
+    assert "Current Goals" in html
+    assert "Goal Comparison" in html
     assert "Shopping List" in html
     assert "Mystic Clover" in html
     assert "Sample Weekly Achievement Progress" in html
@@ -64,9 +67,14 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert "<b>Version</b>" in html
     assert 'role="tablist"' in html
     assert 'aria-controls="panel-recommendations"' in html
+    assert 'aria-controls="panel-current-goals"' in html
     assert 'aria-labelledby="tab-recommendations"' in html
     assert 'data-panel-target="recommendations"' in html
     assert "No recommendations match this filter." in html
+    assert "Ariadne Example" in html
+    assert "character_inventory (Ariadne Example, bag 0, slot 0)" in html
+    assert "legendary.bolt" in html
+    assert "Shared Materials" in html
 
 
 def test_dashboard_html_renders_live_sync_metadata() -> None:
@@ -396,10 +404,22 @@ def _sample_dashboard_payload(
         collection_progress=collections,
         recurring_tasks=recurring,
     )
-    bolt = get_default_recipe_repository().get_recipe("legendary.bolt")
+    repository = get_default_recipe_repository()
+    bolt = repository.get_recipe("legendary.bolt")
+    twilight = repository.get_recipe("legendary.twilight")
     assert bolt is not None
+    assert twilight is not None
+    evaluator = RecipeEvaluator(repository)
+    goal_evaluations = [
+        evaluator.evaluate(recipe, snapshot, inventory)
+        for recipe in [bolt, twilight]
+    ]
+    goal_comparison_report = build_goal_comparison_report(
+        goal_evaluations,
+        selected_goal_ids=["legendary.bolt"],
+    )
     shopping_list = build_shopping_list(
-        [RecipeEvaluator(get_default_recipe_repository()).evaluate(bolt, snapshot, inventory)]
+        [evaluator.evaluate(bolt, snapshot, inventory)]
     )
     shopping_list_prices = (
         price_shopping_list(
@@ -420,6 +440,7 @@ def _sample_dashboard_payload(
         focus_items=focus_items,
         activities=activities,
         progression_report=progression,
+        goal_comparison_report=goal_comparison_report,
         shopping_list=shopping_list,
         shopping_list_prices=shopping_list_prices,
         source_label="fixtures",

@@ -53,6 +53,10 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions,
     load_collection_definitions_from_path,
 )
+from gw2_legendary_planner.planner.goal_comparison import (
+    GoalComparisonReport,
+    build_goal_comparison_report,
+)
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
 from gw2_legendary_planner.planner.market import (
     ShoppingListPriceReport,
@@ -1818,6 +1822,32 @@ def _price_shopping_list_report(
     return price_shopping_list(report, prices)
 
 
+def _price_goal_shopping_list_reports(
+    reports_by_recipe: dict[str, ShoppingListReport],
+    *,
+    use_cache: bool = True,
+) -> dict[str, ShoppingListPriceReport]:
+    settings = Settings.from_environment()
+    cache = (
+        ApiCache(settings.cache_dir, ttl_seconds=settings.cache_ttl_seconds)
+        if use_cache
+        else None
+    )
+    service = CommercePriceService(cache=cache)
+    item_ids: list[int] = []
+    for report in reports_by_recipe.values():
+        item_ids.extend(shopping_list_price_item_ids(report))
+    try:
+        prices = service.get_prices(item_ids)
+    except CommercePriceError as exc:
+        console.print(f"[red]Commerce price data failed to load:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    return {
+        recipe_id: price_shopping_list(report, prices)
+        for recipe_id, report in reports_by_recipe.items()
+    }
+
+
 def _write_shopping_list_prices(
     report: ShoppingListPriceReport,
     *,
@@ -2013,6 +2043,56 @@ def _load_progression_report(
     )
 
 
+def _build_goal_comparison_report_for_snapshot(
+    snapshot: AccountSnapshot,
+    inventory: Inventory,
+    *,
+    selected_recipe_ids: list[str],
+    include_prices: bool,
+    use_price_cache: bool,
+) -> GoalComparisonReport:
+    repository = get_default_recipe_repository()
+    evaluator = RecipeEvaluator(repository)
+    evaluations = [
+        evaluator.evaluate(recipe, snapshot, inventory)
+        for recipe in _dashboard_goal_recipes(repository.list_recipes(), selected_recipe_ids)
+    ]
+    price_reports_by_recipe: dict[str, ShoppingListPriceReport] = {}
+    if include_prices and evaluations:
+        shopping_reports = {
+            evaluation.recipe.id: build_shopping_list([evaluation])
+            for evaluation in evaluations
+        }
+        price_reports_by_recipe = _price_goal_shopping_list_reports(
+            shopping_reports,
+            use_cache=use_price_cache,
+        )
+    return build_goal_comparison_report(
+        evaluations,
+        selected_goal_ids=selected_recipe_ids,
+        price_reports_by_recipe=price_reports_by_recipe,
+    )
+
+
+def _dashboard_goal_recipes(
+    recipes: list[Recipe] | tuple[Recipe, ...],
+    selected_recipe_ids: list[str],
+) -> list[Recipe]:
+    by_id = {recipe.id: recipe for recipe in recipes}
+    goal_recipes = [
+        recipe
+        for recipe in recipes
+        if "legendary" in recipe.tags and recipe.id.startswith("legendary.")
+    ]
+    seen_ids = {recipe.id for recipe in goal_recipes}
+    for recipe_id in selected_recipe_ids:
+        recipe = by_id.get(recipe_id)
+        if recipe and recipe.id not in seen_ids:
+            goal_recipes.append(recipe)
+            seen_ids.add(recipe.id)
+    return sorted(goal_recipes, key=lambda recipe: recipe.name)
+
+
 def _build_progression_report_for_snapshot(
     snapshot: AccountSnapshot,
     inventory: Inventory,
@@ -2171,6 +2251,13 @@ def _build_dashboard_payload_for_snapshot(
         if shopping_list and include_shopping_list_prices
         else None
     )
+    goal_comparison_report = _build_goal_comparison_report_for_snapshot(
+        snapshot,
+        inventory,
+        selected_recipe_ids=shopping_list_recipes or [],
+        include_prices=include_shopping_list_prices,
+        use_price_cache=use_price_cache,
+    )
     return build_dashboard_payload(
         summary,
         focus_items=focus_items,
@@ -2178,6 +2265,7 @@ def _build_dashboard_payload_for_snapshot(
         progression_report=progression_report,
         shopping_list=shopping_list,
         shopping_list_prices=shopping_list_prices,
+        goal_comparison_report=goal_comparison_report,
         source_label=source_label,
         sync_status=sync_status,
     )
