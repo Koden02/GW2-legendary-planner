@@ -37,6 +37,9 @@ dev = [
   "pytest>=8.3.2",
   "ruff>=0.6.9",
 ]
+package = [
+  "pyinstaller>=6.11",
+]
 
 [build-system]
 requires = ["hatchling>=1.25"]
@@ -50,6 +53,7 @@ include = [
   "/src",
   "/tests",
   "/docs",
+  "/scripts",
   "/README.md",
   "/LICENSE",
   "/pyproject.toml",

@@ -171,5 +171,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), and
 [docs/PLANNERS.md](docs/PLANNERS.md) for project structure, extension rules, and
 developer workflows. See [docs/RECIPES.md](docs/RECIPES.md) for recipe data
-scope, [docs/ACTIVITIES.md](docs/ACTIVITIES.md) for activity planner scope, and
+scope, [docs/ACTIVITIES.md](docs/ACTIVITIES.md) for activity planner scope,
+[docs/PACKAGING.md](docs/PACKAGING.md) for Windows executable builds, and
 [docs/ROADMAP.md](docs/ROADMAP.md) for planned phases.

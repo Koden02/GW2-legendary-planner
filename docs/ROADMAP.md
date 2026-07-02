@@ -91,7 +91,8 @@ fetch `/v2/commerce/prices` summaries for missing item requirements without
 making recipes or recommendations price-aware. The dashboard can display those
 price overlays when `--include-shopping-list-prices` is selected. Account
 profile storage and profile-aware account loading are in place for local exports
-or API-backed accounts.
+or API-backed accounts. Windows one-file executable packaging is available as an
+initial PyInstaller build path.
 
-Next scope: native packaging, richer live synchronization UX, fuller multi-account
-profile UX, and plugin loading.
+Next scope: installer polish, app icons/metadata, fuller launch UX, and plugin
+loading.

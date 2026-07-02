@@ -80,6 +80,17 @@ uv run gw2planner gui serve --input tests/fixtures/exports --achievements-data t
 uv run gw2planner doctor --input tests/fixtures/exports
 ```
 
+## Packaging
+
+Windows executable builds use the optional `package` dependency group:
+
+```powershell
+.\scripts\build_windows_app.ps1
+```
+
+The script writes `dist\gw2planner.exe`. See
+[PACKAGING.md](PACKAGING.md) for smoke checks and launch examples.
+
 ## API Key
 
 Use one of:
