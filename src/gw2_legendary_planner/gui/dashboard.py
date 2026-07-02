@@ -18,6 +18,9 @@ from gw2_legendary_planner.planner.progression import (
 from gw2_legendary_planner.planner.shopping_list import ShoppingListReport
 from gw2_legendary_planner.reports.summary import AccountSummary
 
+DashboardSourceKind = Literal["gw2_api", "local_exports"]
+DashboardSyncMode = Literal["static", "live"]
+DashboardSyncState = Literal["ready", "refreshing", "error"]
 DashboardTone = Literal["neutral", "good", "warning", "critical", "info"]
 
 
@@ -31,6 +34,19 @@ class DashboardMetric(BaseModel):
     tone: DashboardTone = "neutral"
 
 
+class DashboardSyncStatus(BaseModel):
+    """Visible synchronization state for the dashboard."""
+
+    mode: DashboardSyncMode = "static"
+    state: DashboardSyncState = "ready"
+    source_kind: DashboardSourceKind = "local_exports"
+    cache_enabled: bool = True
+    refresh_available: bool = False
+    loaded_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    last_refresh_at: datetime | None = None
+    message: str = "Dashboard built from a saved account snapshot."
+
+
 class DashboardPayload(BaseModel):
     """Serializable data contract for the browser-based dashboard."""
 
@@ -38,6 +54,7 @@ class DashboardPayload(BaseModel):
     app_version: str = __version__
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     source_label: str = "account data"
+    sync_status: DashboardSyncStatus = Field(default_factory=DashboardSyncStatus)
     account_name: str = "Unknown account"
     metrics: list[DashboardMetric] = Field(default_factory=list)
     score_percent: float | None = None
@@ -56,6 +73,7 @@ def build_dashboard_payload(
     progression_report: AccountProgressionReport | None = None,
     shopping_list: ShoppingListReport | None = None,
     source_label: str = "account data",
+    sync_status: DashboardSyncStatus | None = None,
     generated_at: datetime | None = None,
 ) -> DashboardPayload:
     """Build a dashboard view model from reusable planner outputs."""
@@ -64,9 +82,12 @@ def build_dashboard_payload(
         [entry for entry in focus_items if entry.quantity > 0],
         key=lambda entry: (entry.category, entry.name),
     )
+    resolved_generated_at = generated_at or datetime.now(UTC)
     return DashboardPayload(
-        generated_at=generated_at or datetime.now(UTC),
+        generated_at=resolved_generated_at,
         source_label=source_label,
+        sync_status=sync_status
+        or DashboardSyncStatus(loaded_at=resolved_generated_at),
         account_name=summary.account_name or "Unknown account",
         metrics=_summary_metrics(summary),
         score_percent=(
@@ -118,6 +139,7 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
         <span>{escape(_format_datetime(payload.generated_at))}</span>
       </div>
     </header>
+    {_render_sync_status(payload.sync_status)}
 
     <nav class="tabs" aria-label="Dashboard views">
       <button class="tab is-active" type="button" data-panel-target="overview">
@@ -254,6 +276,47 @@ def _summary_metrics(summary: AccountSummary) -> list[DashboardMetric]:
             detail=f"{summary.unique_item_count:,} unique",
         ),
     ]
+
+
+def _render_sync_status(status: DashboardSyncStatus) -> str:
+    refresh_button = (
+        """
+        <button class="sync-refresh" type="button" data-refresh-dashboard>
+          Refresh
+        </button>
+        """
+        if status.refresh_available
+        else ""
+    )
+    cache_text = "cache on" if status.cache_enabled else "cache off"
+    return f"""
+    <section class="sync-bar tone-{escape(status.state)}" aria-label="Dashboard sync status">
+      <div>
+        <p class="eyebrow">Sync Status</p>
+        <strong data-sync-state>{escape(status.state.title())}</strong>
+        <span>{escape(status.message)}</span>
+      </div>
+      <dl>
+        <div>
+          <dt>Mode</dt>
+          <dd>{escape(status.mode)}</dd>
+        </div>
+        <div>
+          <dt>Source</dt>
+          <dd>{escape(status.source_kind.replace("_", " "))}</dd>
+        </div>
+        <div>
+          <dt>Loaded</dt>
+          <dd>{escape(_format_datetime(status.loaded_at))}</dd>
+        </div>
+        <div>
+          <dt>Cache</dt>
+          <dd>{escape(cache_text)}</dd>
+        </div>
+      </dl>
+      {refresh_button}
+    </section>
+    """
 
 
 def _render_metrics(metrics: list[DashboardMetric]) -> str:
@@ -627,6 +690,74 @@ h2 {
   background: var(--surface);
 }
 
+.sync-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(320px, 1.6fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 14px 0 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.sync-bar.tone-error {
+  border-left-color: var(--danger);
+}
+
+.sync-bar.tone-refreshing {
+  border-left-color: var(--info);
+}
+
+.sync-bar strong {
+  display: block;
+}
+
+.sync-bar span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 3px;
+}
+
+.sync-bar dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.sync-bar dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sync-bar dd {
+  margin: 3px 0 0;
+  font-weight: 700;
+}
+
+.sync-refresh {
+  min-height: 38px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.sync-refresh:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .tabs {
   display: flex;
   gap: 8px;
@@ -927,6 +1058,11 @@ td strong {
     justify-content: flex-start;
   }
 
+  .sync-bar,
+  .sync-bar dl {
+    grid-template-columns: 1fr;
+  }
+
   .overview-grid,
   .metric-grid,
   .component-row {
@@ -961,6 +1097,33 @@ _DASHBOARD_JS = """
       });
     });
   });
+
+  const refreshButton = document.querySelector("[data-refresh-dashboard]");
+  const syncState = document.querySelector("[data-sync-state]");
+  if (refreshButton) {
+    refreshButton.addEventListener("click", async () => {
+      refreshButton.disabled = true;
+      const originalText = refreshButton.textContent;
+      refreshButton.textContent = "Refreshing";
+      if (syncState) {
+        syncState.textContent = "Refreshing";
+      }
+
+      try {
+        const response = await fetch("/api/refresh", { method: "POST" });
+        if (!response.ok) {
+          throw new Error(`Refresh failed with ${response.status}`);
+        }
+        window.location.reload();
+      } catch (error) {
+        refreshButton.disabled = false;
+        refreshButton.textContent = originalText || "Refresh";
+        if (syncState) {
+          syncState.textContent = "Error";
+        }
+      }
+    });
+  }
 
   const filter = document.querySelector("#recommendation-filter");
   const rows = Array.from(document.querySelectorAll("[data-recommendation-row]"));

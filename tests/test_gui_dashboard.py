@@ -6,6 +6,7 @@ import httpx
 
 from gw2_legendary_planner.api.local import LocalExportLoader
 from gw2_legendary_planner.gui.dashboard import (
+    DashboardSyncStatus,
     build_dashboard_payload,
     render_dashboard_html,
     write_dashboard_html,
@@ -53,6 +54,8 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert "Mystic Clover" in html
     assert "Sample Weekly Achievement Progress" in html
     assert "Gift of Battle" in html
+    assert "Sync Status" in html
+    assert "Dashboard built from a saved account snapshot." in html
     assert 'data-panel-target="recommendations"' in html
 
 
@@ -86,7 +89,69 @@ def test_dashboard_server_serves_index_html() -> None:
     assert missing.status_code == 404
 
 
-def _sample_dashboard_payload():
+def test_dashboard_server_reports_status_and_static_refresh_unavailable() -> None:
+    payload = _sample_dashboard_payload()
+    server = create_dashboard_server(payload, port=0)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        status = httpx.get(f"http://{host}:{port}/api/status", timeout=5)
+        refresh = httpx.post(f"http://{host}:{port}/api/refresh", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert status.status_code == 200
+    assert status.json()["mode"] == "static"
+    assert status.json()["refresh_available"] is False
+    assert refresh.status_code == 405
+
+
+def test_dashboard_server_refreshes_from_provider() -> None:
+    calls = 0
+
+    def refresh_provider():
+        nonlocal calls
+        calls += 1
+        return _sample_dashboard_payload(
+            sync_status=DashboardSyncStatus(
+                mode="live",
+                source_kind="local_exports",
+                refresh_available=True,
+                message=f"Refresh {calls}",
+            )
+        )
+
+    payload = _sample_dashboard_payload(
+        sync_status=DashboardSyncStatus(
+            mode="live",
+            source_kind="local_exports",
+            refresh_available=True,
+            message="Initial",
+        )
+    )
+    server = create_dashboard_server(payload, port=0, refresh_provider=refresh_provider)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        refresh = httpx.post(f"http://{host}:{port}/api/refresh", timeout=5)
+        page = httpx.get(f"http://{host}:{port}/", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert refresh.status_code == 200
+    assert refresh.json()["message"] == "Refresh 1"
+    assert "Refresh 1" in page.text
+
+
+def _sample_dashboard_payload(sync_status: DashboardSyncStatus | None = None):
     snapshot = LocalExportLoader(FIXTURE_DIR).load()
     inventory = InventoryAggregator().aggregate(snapshot)
     summary = build_account_summary(snapshot, inventory)
@@ -127,5 +192,6 @@ def _sample_dashboard_payload():
         progression_report=progression,
         shopping_list=shopping_list,
         source_label="fixtures",
+        sync_status=sync_status,
         generated_at=datetime(2026, 7, 2, 12, 0, tzinfo=UTC),
     )

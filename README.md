@@ -102,6 +102,9 @@ uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
 ```
 
+`gui build` writes a standalone snapshot. `gui serve` hosts the dashboard locally
+with a refresh control that reloads account data from the selected source.
+
 `--input` expects JSON files named after supported endpoints:
 
 - `account.json`

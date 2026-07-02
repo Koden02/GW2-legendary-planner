@@ -290,6 +290,9 @@ def test_cli_gui_build_success(tmp_path: Path) -> None:
     assert "Dashboard written" in result.output
     assert "Example.1234" in html
     assert "Recommendation Engine" in html
+    assert "Sync Status" in html
+    assert "Standalone dashboard built from the loaded account snapshot." in html
+    assert '<button class="sync-refresh"' not in html
     assert "Shopping List" in html
     assert "Mystic Clover" in html
     assert "Sample Weekly Achievement Progress" in html

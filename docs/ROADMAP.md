@@ -82,9 +82,10 @@ should not infer current rotating objectives without verifiable source data.
 Current scope: a desktop-ready browser dashboard is implemented as a GUI adapter
 over existing account summary, focus, activity, progression score,
 recommendation, and shopping-list outputs. It can be written as standalone HTML
-or served locally with `gw2planner gui serve`. Price-free shopping-list
-generation is available from recipe effective costs and can be exported as JSON
-or CSV.
+or served locally with `gw2planner gui serve`. Served dashboards expose sync
+status plus a refresh action for reloading account data from the selected source.
+Price-free shopping-list generation is available from recipe effective costs and
+can be exported as JSON or CSV.
 
-Next scope: native packaging, live synchronization UX, market-price integration,
-multi-account profiles, and plugin loading.
+Next scope: native packaging, richer live synchronization UX, market-price
+integration, multi-account profiles, and plugin loading.

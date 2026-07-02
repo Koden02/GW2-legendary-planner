@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import webbrowser
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -17,8 +18,8 @@ from gw2_legendary_planner.config.settings import Settings
 from gw2_legendary_planner.diagnostics import build_doctor_report, render_doctor_report
 from gw2_legendary_planner.gui.dashboard import (
     DashboardPayload,
+    DashboardSyncStatus,
     build_dashboard_payload,
-    render_dashboard_html,
     write_dashboard_html,
 )
 from gw2_legendary_planner.gui.server import create_dashboard_server
@@ -1197,6 +1198,8 @@ def build_gui_dashboard(
         shopping_list_recipes=shopping_list_recipes,
         shopping_list_quantity=shopping_list_quantity,
         include_complete_shopping_list=include_complete_shopping_list,
+        sync_mode="static",
+        refresh_available=False,
         max_recommendations=max_recommendations,
     )
     write_dashboard_html(output, payload)
@@ -1271,10 +1274,35 @@ def serve_gui_dashboard(
         shopping_list_recipes=shopping_list_recipes,
         shopping_list_quantity=shopping_list_quantity,
         include_complete_shopping_list=include_complete_shopping_list,
+        sync_mode="live",
+        refresh_available=True,
         max_recommendations=max_recommendations,
     )
-    html = render_dashboard_html(payload)
-    server = create_dashboard_server(html, host=host, port=port)
+
+    def refresh_provider() -> DashboardPayload:
+        return _load_dashboard_payload(
+            api_key=api_key,
+            input_dir=input_dir,
+            use_cache=not no_cache,
+            collections_data=collections_data,
+            achievements_data=achievements_data,
+            recurring_data=recurring_data,
+            wizard_vault_data=wizard_vault_data,
+            starter_kit_sets=starter_kit_sets,
+            shopping_list_recipes=shopping_list_recipes,
+            shopping_list_quantity=shopping_list_quantity,
+            include_complete_shopping_list=include_complete_shopping_list,
+            sync_mode="live",
+            refresh_available=True,
+            max_recommendations=max_recommendations,
+        )
+
+    server = create_dashboard_server(
+        payload,
+        host=host,
+        port=port,
+        refresh_provider=refresh_provider,
+    )
     resolved_host, resolved_port = server.server_address
     url = f"http://{resolved_host}:{resolved_port}/"
     console.print(f"[green]Serving dashboard:[/green] {url}")
@@ -1675,14 +1703,24 @@ def _load_dashboard_payload(
     shopping_list_recipes: list[str] | None = None,
     shopping_list_quantity: int = 1,
     include_complete_shopping_list: bool = False,
+    sync_mode: str = "static",
+    refresh_available: bool = False,
     max_recommendations: int = 10,
 ) -> DashboardPayload:
     snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir, use_cache=use_cache)
     inventory = InventoryAggregator().aggregate(snapshot)
+    source_kind = "local_exports" if input_dir else "gw2_api"
+    source_label = str(input_dir) if input_dir else "Guild Wars 2 API"
     return _build_dashboard_payload_for_snapshot(
         snapshot,
         inventory,
-        source_label=str(input_dir) if input_dir else "Guild Wars 2 API",
+        source_label=source_label,
+        sync_status=_dashboard_sync_status(
+            source_kind=source_kind,
+            cache_enabled=use_cache,
+            mode=sync_mode,
+            refresh_available=refresh_available,
+        ),
         collections_data=collections_data,
         achievements_data=achievements_data,
         recurring_data=recurring_data,
@@ -1700,6 +1738,7 @@ def _build_dashboard_payload_for_snapshot(
     inventory: Inventory,
     *,
     source_label: str,
+    sync_status: DashboardSyncStatus | None = None,
     collections_data: Path | None = None,
     achievements_data: Path | None = None,
     recurring_data: Path | None = None,
@@ -1741,6 +1780,35 @@ def _build_dashboard_payload_for_snapshot(
         progression_report=progression_report,
         shopping_list=shopping_list,
         source_label=source_label,
+        sync_status=sync_status,
+    )
+
+
+def _dashboard_sync_status(
+    *,
+    source_kind: str,
+    cache_enabled: bool,
+    mode: str,
+    refresh_available: bool,
+) -> DashboardSyncStatus:
+    loaded_at = datetime.now(UTC)
+    if mode == "live":
+        message = (
+            "Use Refresh to reload account data from the selected source."
+            if source_kind == "local_exports"
+            else "Use Refresh to load the latest account data through the GW2 API."
+        )
+    else:
+        message = "Standalone dashboard built from the loaded account snapshot."
+    return DashboardSyncStatus(
+        mode="live" if mode == "live" else "static",
+        state="ready",
+        source_kind="local_exports" if source_kind == "local_exports" else "gw2_api",
+        cache_enabled=cache_enabled,
+        refresh_available=refresh_available,
+        loaded_at=loaded_at,
+        last_refresh_at=loaded_at if refresh_available else None,
+        message=message,
     )
 
 

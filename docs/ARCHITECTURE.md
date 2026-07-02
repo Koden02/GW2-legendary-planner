@@ -222,6 +222,7 @@ flowchart LR
 
 `gui/dashboard.py` owns the dashboard view model and HTML rendering, including
 optional shopping-list views supplied by the CLI. `gui/server.py` owns local
-preview serving. CLI commands may load account data and pass planner outputs into
-the GUI layer, but GUI code should not call GW2 API endpoints, parse inventory
-sources, or evaluate recipes directly.
+preview serving and exposes `/api/status` plus `/api/refresh` when a refresh
+provider is configured by `gw2planner gui serve`. CLI commands may load account
+data and pass planner outputs into the GUI layer, but GUI code should not call
+GW2 API endpoints, parse inventory sources, or evaluate recipes directly.
