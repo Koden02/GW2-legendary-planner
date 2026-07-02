@@ -42,6 +42,8 @@ project currently supports:
   planner outputs.
 - Fetching optional Guild Wars 2 trading-post price estimates for shopping-list
   item requirements.
+- Managing reusable account profiles for local exports, per-account API key
+  environment variables, and per-profile cache paths.
 - Exporting planner data as JSON or CSV.
 
 The packaged recipe set is intentionally generation-one focused. Market pricing,
@@ -65,6 +67,8 @@ uv sync --dev
 ```powershell
 uv run gw2planner analyze --input ./exports/
 uv run gw2planner analyze --api-key $env:GW2_API_KEY
+uv run gw2planner profiles add main --input ./exports/ --default
+uv run gw2planner --profile main analyze
 uv run gw2planner export inventory --input ./exports/ --format csv --output inventory.csv
 uv run gw2planner export summary --input ./exports/ --format json
 uv run gw2planner export focus --input ./exports/ --format csv
@@ -102,7 +106,7 @@ uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
 uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --include-shopping-list-prices --output dashboard.html
-uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --port 8765
+uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --port 0
 uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
 ```
@@ -110,6 +114,18 @@ uv run gw2planner doctor --require-api-key
 `gui build` writes a standalone snapshot. `gui serve` hosts the dashboard locally
 with a refresh control that reloads account data from the selected source.
 Dashboard shopping-list prices are opt-in with `--include-shopping-list-prices`.
+Use `--port 0` to let the operating system choose an unused local port.
+
+Profiles are stored as JSON at `GW2PLANNER_PROFILE_FILE` or under
+`GW2PLANNER_CONFIG_DIR`. A profile can point at local exports or an API key
+environment variable:
+
+```powershell
+uv run gw2planner profiles add main --input ./exports/ --default
+uv run gw2planner profiles add live --api-key-env GW2_API_KEY --cache-dir ./.cache/live
+uv run gw2planner profiles list
+uv run gw2planner --profile live analyze
+```
 
 `--input` expects JSON files named after supported endpoints:
 

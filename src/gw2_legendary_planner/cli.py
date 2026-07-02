@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import webbrowser
 from datetime import UTC, datetime
@@ -8,13 +9,16 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import typer
+from pydantic import ValidationError
 from rich.console import Console
+from rich.table import Table
 
 from gw2_legendary_planner import __version__
 from gw2_legendary_planner.api.client import GW2ApiClient
 from gw2_legendary_planner.api.commerce import CommercePriceError, CommercePriceService
 from gw2_legendary_planner.api.local import LocalExportError, LocalExportLoader
 from gw2_legendary_planner.cache.local import ApiCache
+from gw2_legendary_planner.config.profiles import AccountProfile, ProfileError, ProfileStore
 from gw2_legendary_planner.config.settings import Settings
 from gw2_legendary_planner.diagnostics import build_doctor_report, render_doctor_report
 from gw2_legendary_planner.gui.dashboard import (
@@ -143,15 +147,37 @@ recipe_app = typer.Typer(help="Inspect and evaluate data-defined recipes.")
 activity_app = typer.Typer(help="Inspect legendary activity planners.")
 progress_app = typer.Typer(help="Score account progression and recommend next steps.")
 gui_app = typer.Typer(help="Build and preview the desktop dashboard.")
+profile_app = typer.Typer(help="Manage reusable account profiles.")
 app.add_typer(export_app, name="export")
 app.add_typer(recipe_app, name="recipes")
 app.add_typer(activity_app, name="activities")
 app.add_typer(progress_app, name="progress")
 app.add_typer(gui_app, name="gui")
+app.add_typer(profile_app, name="profiles")
 console = Console()
 
 Format = Literal["json", "csv"]
 RecipeFormat = Literal["rich", "json", "csv"]
+_ACTIVE_PROFILE: str | None = None
+
+
+@app.callback()
+def main(
+    profile: Annotated[
+        str | None,
+        typer.Option(
+            "--profile",
+            help=(
+                "Use an account profile from the profile store. "
+                "Defaults to GW2PLANNER_PROFILE or the stored default profile."
+            ),
+        ),
+    ] = None,
+) -> None:
+    """Guild Wars 2 account progression and legendary planner."""
+
+    global _ACTIVE_PROFILE
+    _ACTIVE_PROFILE = profile
 
 
 def _load_snapshot(
@@ -161,20 +187,34 @@ def _load_snapshot(
     use_cache: bool = True,
 ) -> AccountSnapshot:
     settings = Settings.from_environment()
-    resolved_key = api_key or settings.api_key
+    profile = _resolve_active_profile(settings)
+    resolved_input_dir = input_dir or (profile.input_dir if profile else None)
+    resolved_key = api_key or (
+        profile.resolved_api_key(settings.api_key) if profile else settings.api_key
+    )
+    cache_dir = (
+        profile.cache_dir
+        if profile and profile.cache_dir
+        else settings.cache_dir / "profiles" / profile.name
+        if profile
+        else settings.cache_dir
+    )
 
-    if input_dir:
+    if resolved_input_dir:
         try:
-            return LocalExportLoader(input_dir).load()
+            return LocalExportLoader(resolved_input_dir).load()
         except LocalExportError as exc:
             _render_local_export_error(exc)
             raise typer.Exit(1) from exc
 
     if not resolved_key:
-        raise typer.BadParameter("Provide --api-key, set GW2PLANNER_API_KEY, or use --input.")
+        raise typer.BadParameter(
+            "Provide --api-key, set GW2PLANNER_API_KEY, use --input, "
+            "or select a profile with an API key or input directory."
+        )
 
     cache = (
-        ApiCache(settings.cache_dir, ttl_seconds=settings.cache_ttl_seconds)
+        ApiCache(cache_dir, ttl_seconds=settings.cache_ttl_seconds)
         if use_cache
         else None
     )
@@ -1278,7 +1318,10 @@ def serve_gui_dashboard(
         typer.Option("--input", "-i", help="Directory containing local GW2 API JSON exports."),
     ] = None,
     host: Annotated[str, typer.Option("--host", help="Local bind host.")] = "127.0.0.1",
-    port: Annotated[int, typer.Option("--port", min=0, help="Local bind port.")] = 8765,
+    port: Annotated[
+        int,
+        typer.Option("--port", min=0, help="Local bind port. Use 0 to choose a free port."),
+    ] = 0,
     open_browser: Annotated[
         bool,
         typer.Option("--open/--no-open", help="Open the dashboard in the default browser."),
@@ -1410,14 +1453,168 @@ def doctor(
 ) -> None:
     """Validate the local development and data-loading environment."""
 
+    settings = Settings.from_environment()
+    profile = _resolve_active_profile(settings)
+    resolved_input_dir = input_dir or (profile.input_dir if profile else None)
+    resolved_api_key = api_key or (
+        profile.resolved_api_key(settings.api_key) if profile else settings.api_key
+    )
+    resolved_cache_dir = (
+        profile.cache_dir
+        if profile and profile.cache_dir
+        else settings.cache_dir / "profiles" / profile.name
+        if profile
+        else settings.cache_dir
+    )
     report = build_doctor_report(
-        input_dir=input_dir,
+        input_dir=resolved_input_dir,
         require_api_key=require_api_key,
-        api_key=api_key,
+        api_key=resolved_api_key,
+        cache_dir=resolved_cache_dir,
     )
     render_doctor_report(console, report)
     if report.has_errors:
         raise typer.Exit(1)
+
+
+@profile_app.command("list")
+def list_profiles() -> None:
+    """List configured account profiles."""
+
+    settings = Settings.from_environment()
+    try:
+        config = ProfileStore(settings.profile_file).load()
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+
+    table = Table(title=f"Account Profiles ({settings.profile_file})")
+    table.add_column("Default")
+    table.add_column("Name")
+    table.add_column("Account Source", overflow="fold")
+    table.add_column("API Key")
+    table.add_column("Cache", overflow="fold")
+    for profile in sorted(config.profiles.values(), key=lambda entry: entry.name.lower()):
+        table.add_row(
+            "*" if profile.name == config.default_profile else "",
+            profile.name,
+            str(profile.input_dir) if profile.input_dir else "GW2 API",
+            _profile_api_source(profile),
+            str(profile.cache_dir) if profile.cache_dir else "auto",
+        )
+    if not config.profiles:
+        table.add_row("-", "No profiles configured", "-", "-", "-")
+    console.print(table)
+
+
+@profile_app.command("show")
+def show_profile(
+    name: Annotated[
+        str | None,
+        typer.Argument(help="Profile name. Defaults to stored default."),
+    ] = None,
+) -> None:
+    """Show one account profile without revealing stored API keys."""
+
+    settings = Settings.from_environment()
+    store = ProfileStore(settings.profile_file)
+    try:
+        profile = store.get_profile(name)
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+    if profile is None:
+        console.print("[yellow]No default profile is configured.[/yellow]")
+        raise typer.Exit(1)
+
+    console.print(f"Account Profile: {profile.name}")
+    console.print(f"name: {profile.name}")
+    console.print(f"input_dir: {profile.input_dir or ''}")
+    console.print(f"api_key: {_profile_api_source(profile)}")
+    console.print(f"cache_dir: {profile.cache_dir or 'auto'}")
+    console.print(f"profile_file: {settings.profile_file}")
+
+
+@profile_app.command("add")
+def add_profile(
+    name: Annotated[str, typer.Argument(help="Profile name.")],
+    api_key: Annotated[
+        str | None,
+        typer.Option(
+            "--api-key",
+            help="Store an API key in the profile file. This is plaintext.",
+        ),
+    ] = None,
+    api_key_env: Annotated[
+        str | None,
+        typer.Option(
+            "--api-key-env",
+            help="Environment variable containing this profile's API key.",
+        ),
+    ] = None,
+    input_dir: Annotated[
+        Path | None,
+        typer.Option("--input", "-i", help="Local export directory for this profile."),
+    ] = None,
+    cache_dir: Annotated[
+        Path | None,
+        typer.Option("--cache-dir", help="Cache directory for this profile."),
+    ] = None,
+    make_default: Annotated[
+        bool,
+        typer.Option("--default/--not-default", help="Make this the default profile."),
+    ] = False,
+) -> None:
+    """Create or update an account profile."""
+
+    try:
+        profile = AccountProfile(
+            name=name,
+            api_key=api_key,
+            api_key_env=api_key_env,
+            input_dir=input_dir,
+            cache_dir=cache_dir,
+        )
+    except ValidationError as exc:
+        _render_profile_error(ProfileError(exc.errors()[0]["msg"]))
+        raise typer.Exit(1) from exc
+    settings = Settings.from_environment()
+    try:
+        ProfileStore(settings.profile_file).upsert_profile(profile, make_default=make_default)
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+    console.print(f"[green]Profile saved:[/green] {profile.name}")
+
+
+@profile_app.command("default")
+def set_default_profile(
+    name: Annotated[str, typer.Argument(help="Profile name to use by default.")],
+) -> None:
+    """Set the default account profile."""
+
+    settings = Settings.from_environment()
+    try:
+        ProfileStore(settings.profile_file).set_default(name)
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+    console.print(f"[green]Default profile:[/green] {name}")
+
+
+@profile_app.command("remove")
+def remove_profile(
+    name: Annotated[str, typer.Argument(help="Profile name to remove.")],
+) -> None:
+    """Remove an account profile."""
+
+    settings = Settings.from_environment()
+    try:
+        ProfileStore(settings.profile_file).remove_profile(name)
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+    console.print(f"[green]Profile removed:[/green] {name}")
 
 
 @app.command()
@@ -1458,6 +1655,27 @@ def _render_local_export_error(exc: LocalExportError) -> None:
         subject = issue.endpoint or issue.path or exc.report.export_dir
         console.print(f"- {subject}: {issue.message}")
         console.print(f"  Fix: {issue.fix}")
+
+
+def _resolve_active_profile(settings: Settings) -> AccountProfile | None:
+    profile_name = _ACTIVE_PROFILE or os.environ.get("GW2PLANNER_PROFILE")
+    try:
+        return ProfileStore(settings.profile_file).get_profile(profile_name)
+    except ProfileError as exc:
+        _render_profile_error(exc)
+        raise typer.Exit(1) from exc
+
+
+def _render_profile_error(exc: ProfileError) -> None:
+    console.print(f"[red]Profile configuration error:[/red] {exc}")
+
+
+def _profile_api_source(profile: AccountProfile) -> str:
+    if profile.api_key:
+        return "stored key"
+    if profile.api_key_env:
+        return f"env:{profile.api_key_env}"
+    return "global env fallback"
 
 
 def _load_recipe_or_exit(recipe_id: str, repository=None):
@@ -1820,10 +2038,19 @@ def _load_dashboard_payload(
     refresh_available: bool = False,
     max_recommendations: int = 10,
 ) -> DashboardPayload:
+    settings = Settings.from_environment()
+    profile = _resolve_active_profile(settings)
+    resolved_input_dir = input_dir or (profile.input_dir if profile else None)
     snapshot = _load_snapshot(api_key=api_key, input_dir=input_dir, use_cache=use_cache)
     inventory = InventoryAggregator().aggregate(snapshot)
-    source_kind = "local_exports" if input_dir else "gw2_api"
-    source_label = str(input_dir) if input_dir else "Guild Wars 2 API"
+    source_kind = "local_exports" if resolved_input_dir else "gw2_api"
+    source_label = (
+        str(resolved_input_dir)
+        if resolved_input_dir
+        else f"GW2 API profile: {profile.name}"
+        if profile
+        else "Guild Wars 2 API"
+    )
     return _build_dashboard_payload_for_snapshot(
         snapshot,
         inventory,

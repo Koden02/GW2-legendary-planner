@@ -16,7 +16,7 @@ desktop UI, and future automation surfaces should call the same library services
   engine.
 - `reports/` adapts domain results to Rich tables, CSV, and JSON.
 - `cache/` provides local API response caching.
-- `config/` reads settings and API key configuration.
+- `config/` reads settings, API key configuration, and reusable account profiles.
 - `diagnostics.py` contains doctor checks for local setup and export validity.
 - `tests/` covers loader, inventory, summary, planner, and export behavior.
 
@@ -40,6 +40,7 @@ flowchart TD
     Reports --> Output["Rich, JSON, CSV"]
     Diagnostics["doctor diagnostics"] --> API
     Diagnostics --> Config["config"]
+    Config --> Profiles["account profiles"]
 ```
 
 The dependency direction should stay one-way:
@@ -77,6 +78,21 @@ Validation catches:
 
 CLI commands catch `LocalExportError` and print fix-oriented messages instead of
 tracebacks.
+
+## Account Profiles
+
+Account profiles live in `config/profiles.py` and are stored as JSON at
+`Settings.profile_file`. They are configuration only: planners still receive
+resolved snapshots and inventories. A profile can define:
+
+- local export directory
+- API key environment variable or stored API key
+- profile-specific cache directory
+
+CLI commands resolve profiles before loading account data. Explicit command-line
+`--input` and `--api-key` values override profile values for that run. When a
+profile uses the live API and has no explicit cache directory, cache data is
+stored under the global cache directory by profile name.
 
 ## Item Metadata
 
@@ -247,6 +263,8 @@ flowchart LR
 optional shopping-list and shopping-list price views supplied by the CLI.
 `gui/server.py` owns local preview serving and exposes `/api/status` plus
 `/api/refresh` when a refresh provider is configured by `gw2planner gui serve`.
+`gui serve` defaults to port `0`, so the operating system assigns a free local
+port and the CLI prints the actual URL.
 CLI commands may load account data and pass planner outputs into the GUI layer,
 but GUI code should not call GW2 API endpoints, parse inventory sources,
 evaluate recipes, or fetch commerce prices directly.

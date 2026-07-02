@@ -41,13 +41,14 @@ def build_doctor_report(
     input_dir: Path | None = None,
     require_api_key: bool = False,
     api_key: str | None = None,
+    cache_dir: Path | None = None,
 ) -> DoctorReport:
     settings = Settings.from_environment()
     diagnostics = [
         _python_version_check(),
         _uv_check(),
         _api_key_check(api_key or settings.api_key, require_api_key),
-        _cache_writable_check(settings.cache_dir),
+        _cache_writable_check(cache_dir or settings.cache_dir),
     ]
     diagnostics.extend(_local_export_checks(input_dir))
     return DoctorReport(diagnostics=diagnostics)

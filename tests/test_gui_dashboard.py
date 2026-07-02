@@ -83,6 +83,17 @@ def test_write_dashboard_html_creates_parent_directories(tmp_path: Path) -> None
     assert "GW2 Legendary Planner" in output.read_text(encoding="utf-8")
 
 
+def test_dashboard_server_default_port_uses_free_port() -> None:
+    server = create_dashboard_server("<!doctype html><html>ok</html>")
+    try:
+        host, port = server.server_address
+    finally:
+        server.server_close()
+
+    assert host == "127.0.0.1"
+    assert port > 0
+
+
 def test_dashboard_server_serves_index_html() -> None:
     server = create_dashboard_server("<!doctype html><html>ok</html>", port=0)
     thread = Thread(target=server.serve_forever, daemon=True)

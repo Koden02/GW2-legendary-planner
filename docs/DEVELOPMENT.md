@@ -76,7 +76,7 @@ uv run gw2planner export recurring --input tests/fixtures/exports --data tests/f
 uv run gw2planner export progression --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --format json
 uv run gw2planner export shopping-list legendary.bolt --input tests/fixtures/exports --format csv
 uv run gw2planner gui build --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --shopping-list-recipe legendary.bolt --include-shopping-list-prices --output gw2planner-dashboard.html
-uv run gw2planner gui serve --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --shopping-list-recipe legendary.bolt --port 8765
+uv run gw2planner gui serve --input tests/fixtures/exports --achievements-data tests/fixtures/achievements/sample_achievements.json --collections-data tests/fixtures/collections/sample_collections.json --recurring-data tests/fixtures/recurring/sample_tasks.json --shopping-list-recipe legendary.bolt --port 0
 uv run gw2planner doctor --input tests/fixtures/exports
 ```
 
@@ -88,6 +88,14 @@ Use one of:
 uv run gw2planner analyze --api-key "<key>"
 $env:GW2PLANNER_API_KEY = "<key>"
 uv run gw2planner analyze
+```
+
+For multi-account workflows, prefer profile-level API key environment variables
+over storing API keys directly in the profile file:
+
+```powershell
+uv run gw2planner profiles add main --api-key-env GW2_MAIN_API_KEY --default
+uv run gw2planner --profile main analyze
 ```
 
 The key needs permission for the account endpoints used by this milestone:

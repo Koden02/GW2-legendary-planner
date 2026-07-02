@@ -356,10 +356,33 @@ def test_cli_gui_build_can_include_shopping_list_prices(tmp_path: Path, monkeypa
     assert "Mystic Clover" in html
 
 
+def test_cli_gui_build_uses_default_profile_input_dir(tmp_path: Path) -> None:
+    profile_file = tmp_path / "profiles.json"
+    env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
+    output = tmp_path / "dashboard.html"
+    runner.invoke(
+        app,
+        ["profiles", "add", "main", "--input", str(FIXTURE_DIR), "--default"],
+        env=env,
+    )
+
+    result = runner.invoke(app, ["gui", "build", "--output", str(output)], env=env)
+
+    assert result.exit_code == 0
+    html = output.read_text(encoding="utf-8")
+    assert "Example.1234" in html
+    assert str(FIXTURE_DIR) in html
+
+
 def test_cli_gui_build_fails_without_input_or_api_key(tmp_path: Path) -> None:
     result = runner.invoke(
         app,
         ["gui", "build", "--output", str(tmp_path / "dashboard.html")],
+        env={
+            "GW2PLANNER_API_KEY": "",
+            "GW2_API_KEY": "",
+            "GW2PLANNER_PROFILE_FILE": str(tmp_path / "profiles.json"),
+        },
     )
 
     assert result.exit_code != 0
@@ -375,8 +398,16 @@ def test_cli_doctor_success() -> None:
     assert "All required local exports are valid" in result.output
 
 
-def test_cli_analyze_fails_without_input_or_api_key() -> None:
-    result = runner.invoke(app, ["analyze"])
+def test_cli_analyze_fails_without_input_or_api_key(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["analyze"],
+        env={
+            "GW2PLANNER_API_KEY": "",
+            "GW2_API_KEY": "",
+            "GW2PLANNER_PROFILE_FILE": str(tmp_path / "profiles.json"),
+        },
+    )
 
     assert result.exit_code != 0
     assert "Provide --api-key" in result.output
@@ -404,11 +435,77 @@ def test_cli_doctor_reports_malformed_json(tmp_path: Path) -> None:
     assert "Malformed JSON" in result.output
 
 
-def test_cli_doctor_can_require_api_key() -> None:
-    result = runner.invoke(app, ["doctor", "--require-api-key"], env={"GW2PLANNER_API_KEY": ""})
+def test_cli_doctor_can_require_api_key(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app,
+        ["doctor", "--require-api-key"],
+        env={
+            "GW2PLANNER_API_KEY": "",
+            "GW2_API_KEY": "",
+            "GW2PLANNER_PROFILE_FILE": str(tmp_path / "profiles.json"),
+        },
+    )
 
     assert result.exit_code == 1
     assert "No API key was provided" in result.output
+
+
+def test_cli_profiles_add_list_show_and_default(tmp_path: Path) -> None:
+    profile_file = tmp_path / "profiles.json"
+    env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
+
+    add_result = runner.invoke(
+        app,
+        [
+            "profiles",
+            "add",
+            "main",
+            "--input",
+            str(FIXTURE_DIR),
+            "--api-key-env",
+            "GW2_MAIN_API_KEY",
+            "--default",
+        ],
+        env=env,
+    )
+    list_result = runner.invoke(app, ["profiles", "list"], env=env)
+    show_result = runner.invoke(app, ["profiles", "show", "main"], env=env)
+
+    assert add_result.exit_code == 0
+    assert "Profile saved" in add_result.output
+    assert list_result.exit_code == 0
+    assert "main" in list_result.output
+    assert "env:GW2_MAIN_API_KEY" in list_result.output
+    assert show_result.exit_code == 0
+    assert str(FIXTURE_DIR) in show_result.output
+
+
+def test_cli_analyze_uses_default_profile_input_dir(tmp_path: Path) -> None:
+    profile_file = tmp_path / "profiles.json"
+    env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
+    runner.invoke(
+        app,
+        ["profiles", "add", "main", "--input", str(FIXTURE_DIR), "--default"],
+        env=env,
+    )
+
+    result = runner.invoke(app, ["analyze"], env=env)
+
+    assert result.exit_code == 0
+    assert "Account Summary" in result.output
+    assert "Example.1234" in result.output
+
+
+def test_cli_analyze_can_use_named_profile(tmp_path: Path) -> None:
+    profile_file = tmp_path / "profiles.json"
+    env = {"GW2PLANNER_PROFILE_FILE": str(profile_file)}
+    runner.invoke(app, ["profiles", "add", "main"], env=env)
+    runner.invoke(app, ["profiles", "add", "alt", "--input", str(FIXTURE_DIR)], env=env)
+
+    result = runner.invoke(app, ["--profile", "alt", "analyze"], env=env)
+
+    assert result.exit_code == 0
+    assert "Example.1234" in result.output
 
 
 def test_cli_recipes_list_success() -> None:

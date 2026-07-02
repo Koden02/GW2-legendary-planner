@@ -63,7 +63,7 @@ def create_dashboard_server(
     dashboard: str | DashboardPayload,
     *,
     host: str = "127.0.0.1",
-    port: int = 8765,
+    port: int = 0,
     refresh_provider: DashboardRefreshProvider | None = None,
 ) -> DashboardServer:
     """Create a local server for a dashboard HTML page or payload."""
