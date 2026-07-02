@@ -12,6 +12,7 @@ from gw2_legendary_planner.gui.dashboard import (
     write_dashboard_html,
 )
 from gw2_legendary_planner.gui.server import create_dashboard_server
+from gw2_legendary_planner.gui.setup import render_api_key_setup_html
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
 from gw2_legendary_planner.models.commerce import CommercePrice
 from gw2_legendary_planner.planner.achievements import (
@@ -125,6 +126,17 @@ def test_write_dashboard_html_creates_parent_directories(tmp_path: Path) -> None
 
     assert output.exists()
     assert "GW2 Legendary Planner" in output.read_text(encoding="utf-8")
+
+
+def test_api_key_setup_page_explains_memory_only_key() -> None:
+    html = render_api_key_setup_html()
+
+    assert "Guild Wars 2 API key" in html
+    assert "Load Account" in html
+    assert "kept in memory for this session" in html
+    assert "Local setup" in html
+    assert "data-api-key-form" in html
+    assert "data-api-key-input" in html
 
 
 def test_dashboard_server_default_port_uses_free_port() -> None:
@@ -272,6 +284,83 @@ def test_dashboard_server_static_refresh_unavailable_remains_method_error() -> N
     assert refresh.status_code == 405
     assert refresh.json()["state"] == "error"
     assert refresh.json()["error"] == "Dashboard refresh is not available for this server."
+
+
+def test_dashboard_server_api_key_setup_loads_dashboard_from_provider() -> None:
+    captured_api_keys: list[str] = []
+
+    def setup_provider(api_key: str):
+        captured_api_keys.append(api_key)
+        return _sample_dashboard_payload(
+            sync_status=DashboardSyncStatus(
+                mode="live",
+                source_kind="gw2_api",
+                refresh_available=True,
+                message="Loaded from setup.",
+            )
+        )
+
+    server = create_dashboard_server(
+        render_api_key_setup_html(),
+        port=0,
+        api_key_setup_provider=setup_provider,
+    )
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        setup = httpx.post(
+            f"http://{host}:{port}/api/setup/api-key",
+            json={"api_key": " fixture-key "},
+            timeout=5,
+        )
+        status = httpx.get(f"http://{host}:{port}/api/status", timeout=5)
+        page = httpx.get(f"http://{host}:{port}/", timeout=5)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert setup.status_code == 200
+    assert setup.json()["message"] == "Loaded from setup."
+    assert captured_api_keys == ["fixture-key"]
+    assert status.json()["state"] == "ready"
+    assert status.json()["source_kind"] == "gw2_api"
+    assert "Example.1234" in page.text
+    assert "Loaded from setup." in page.text
+
+
+def test_dashboard_server_api_key_setup_validates_json_payload() -> None:
+    server = create_dashboard_server(
+        render_api_key_setup_html(),
+        port=0,
+        api_key_setup_provider=lambda api_key: _sample_dashboard_payload(),
+    )
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    host, port = server.server_address
+
+    try:
+        missing = httpx.post(
+            f"http://{host}:{port}/api/setup/api-key",
+            json={"api_key": "  "},
+            timeout=5,
+        )
+        malformed = httpx.post(
+            f"http://{host}:{port}/api/setup/api-key",
+            content="{bad json",
+            timeout=5,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert missing.status_code == 400
+    assert missing.json()["error"] == "API key is required."
+    assert malformed.status_code == 400
+    assert malformed.json()["error"] == "Request body must be valid JSON."
 
 
 def _sample_dashboard_payload(

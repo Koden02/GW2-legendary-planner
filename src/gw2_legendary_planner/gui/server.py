@@ -15,10 +15,16 @@ from gw2_legendary_planner.gui.dashboard import (
 )
 
 DashboardRefreshProvider = Callable[[], DashboardPayload]
+DashboardSetupProvider = Callable[[str], DashboardPayload]
+_MAX_JSON_BODY_BYTES = 64 * 1024
 
 
 class DashboardRefreshUnavailableError(RuntimeError):
     """Raised when refresh is requested for a static dashboard server."""
+
+
+class DashboardSetupUnavailableError(RuntimeError):
+    """Raised when first-run setup is requested for a static dashboard server."""
 
 
 class DashboardServer(ThreadingHTTPServer):
@@ -34,11 +40,13 @@ class DashboardServer(ThreadingHTTPServer):
         html: str,
         payload: DashboardPayload | None = None,
         refresh_provider: DashboardRefreshProvider | None = None,
+        api_key_setup_provider: DashboardSetupProvider | None = None,
     ) -> None:
         super().__init__(server_address, request_handler_class)
         self._html = html
         self._payload = payload
         self._refresh_provider = refresh_provider
+        self._api_key_setup_provider = api_key_setup_provider
         self._lock = Lock()
 
     @property
@@ -58,6 +66,18 @@ class DashboardServer(ThreadingHTTPServer):
                 "Dashboard refresh is not available for this server."
             )
         payload = self._refresh_provider()
+        html = render_dashboard_html(payload)
+        with self._lock:
+            self._payload = payload
+            self._html = html
+        return payload
+
+    def setup_with_api_key(self, api_key: str) -> DashboardPayload:
+        if not self._api_key_setup_provider:
+            raise DashboardSetupUnavailableError(
+                "API key setup is not available for this server."
+            )
+        payload = self._api_key_setup_provider(api_key)
         html = render_dashboard_html(payload)
         with self._lock:
             self._payload = payload
@@ -92,6 +112,7 @@ def create_dashboard_server(
     host: str = "127.0.0.1",
     port: int = 0,
     refresh_provider: DashboardRefreshProvider | None = None,
+    api_key_setup_provider: DashboardSetupProvider | None = None,
 ) -> DashboardServer:
     """Create a local server for a dashboard HTML page or payload."""
 
@@ -115,9 +136,15 @@ def create_dashboard_server(
 
         def do_POST(self) -> None:
             path = urlparse(self.path).path
-            if path != "/api/refresh":
-                self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+            if path == "/api/refresh":
+                self._handle_refresh()
                 return
+            if path == "/api/setup/api-key":
+                self._handle_api_key_setup()
+                return
+            self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
+        def _handle_refresh(self) -> None:
             try:
                 payload = self.server.refresh_dashboard()
             except DashboardRefreshUnavailableError as exc:
@@ -130,8 +157,55 @@ def create_dashboard_server(
                 return
             self._send_json(payload.sync_status.model_dump(mode="json"))
 
+        def _handle_api_key_setup(self) -> None:
+            try:
+                request_payload = self._read_json_payload()
+                api_key = str(request_payload.get("api_key", "")).strip()
+                if not api_key:
+                    self._send_json(
+                        {"error": "API key is required."},
+                        status=HTTPStatus.BAD_REQUEST,
+                    )
+                    return
+                payload = self.server.setup_with_api_key(api_key)
+            except ValueError as exc:
+                self._send_json(
+                    {"error": str(exc)},
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+                return
+            except DashboardSetupUnavailableError as exc:
+                self._send_json(
+                    {"error": str(exc)},
+                    status=HTTPStatus.METHOD_NOT_ALLOWED,
+                )
+                return
+            except Exception as exc:
+                self._send_json(
+                    {"error": str(exc) or exc.__class__.__name__},
+                    status=HTTPStatus.BAD_REQUEST,
+                )
+                return
+            self._send_json(payload.sync_status.model_dump(mode="json"))
+
         def log_message(self, format: str, *args: object) -> None:
             return
+
+        def _read_json_payload(self) -> dict[str, Any]:
+            try:
+                content_length = int(self.headers.get("Content-Length", "0") or "0")
+            except ValueError as exc:
+                raise ValueError("Content-Length must be a number.") from exc
+            if content_length > _MAX_JSON_BODY_BYTES:
+                raise ValueError("Request body is too large.")
+            raw_payload = self.rfile.read(content_length)
+            try:
+                payload = json.loads(raw_payload.decode("utf-8") if raw_payload else "{}")
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ValueError("Request body must be valid JSON.") from exc
+            if not isinstance(payload, dict):
+                raise ValueError("Request body must be a JSON object.")
+            return payload
 
         def _send_html(self, html: str) -> None:
             encoded_html = html.encode("utf-8")
@@ -162,4 +236,5 @@ def create_dashboard_server(
         html=html,
         payload=payload,
         refresh_provider=refresh_provider,
+        api_key_setup_provider=api_key_setup_provider,
     )

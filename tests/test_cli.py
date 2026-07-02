@@ -389,6 +389,51 @@ def test_cli_gui_build_fails_without_input_or_api_key(tmp_path: Path) -> None:
     assert "Provide --api-key" in result.output
 
 
+def test_cli_gui_serve_without_source_starts_setup_page(tmp_path: Path, monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeDashboardServer:
+        server_address = ("127.0.0.1", 8765)
+
+        def serve_forever(self) -> None:
+            captured["served"] = True
+            raise KeyboardInterrupt
+
+        def server_close(self) -> None:
+            captured["closed"] = True
+
+    def fake_create_dashboard_server(dashboard, **kwargs):
+        captured["dashboard"] = dashboard
+        captured["kwargs"] = kwargs
+        return FakeDashboardServer()
+
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli.create_dashboard_server",
+        fake_create_dashboard_server,
+    )
+
+    result = runner.invoke(
+        app,
+        ["gui", "serve", "--port", "0"],
+        env={
+            "GW2PLANNER_API_KEY": "",
+            "GW2_API_KEY": "",
+            "GW2PLANNER_PROFILE_FILE": str(tmp_path / "profiles.json"),
+        },
+    )
+
+    assert result.exit_code == 0
+    assert "No account source configured" in result.output
+    assert "Serving dashboard" in result.output
+    assert captured["served"] is True
+    assert captured["closed"] is True
+    assert "Guild Wars 2 API key" in str(captured["dashboard"])
+    kwargs = captured["kwargs"]
+    assert isinstance(kwargs, dict)
+    assert kwargs["api_key_setup_provider"] is not None
+    assert kwargs["refresh_provider"] is not None
+
+
 def test_cli_doctor_success() -> None:
     result = runner.invoke(app, ["doctor", "--input", str(FIXTURE_DIR)])
 

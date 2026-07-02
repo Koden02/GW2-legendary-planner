@@ -28,6 +28,7 @@ from gw2_legendary_planner.gui.dashboard import (
     write_dashboard_html,
 )
 from gw2_legendary_planner.gui.server import create_dashboard_server
+from gw2_legendary_planner.gui.setup import render_api_key_setup_html
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
 from gw2_legendary_planner.inventory.models import Inventory
 from gw2_legendary_planner.models.snapshot import AccountSnapshot
@@ -1377,28 +1378,38 @@ def serve_gui_dashboard(
 ) -> None:
     """Serve the dashboard locally until interrupted."""
 
-    payload = _load_dashboard_payload(
-        api_key=api_key,
-        input_dir=input_dir,
-        use_cache=not no_cache,
-        collections_data=collections_data,
-        achievements_data=achievements_data,
-        recurring_data=recurring_data,
-        wizard_vault_data=wizard_vault_data,
-        starter_kit_sets=starter_kit_sets,
-        shopping_list_recipes=shopping_list_recipes,
-        shopping_list_quantity=shopping_list_quantity,
-        include_complete_shopping_list=include_complete_shopping_list,
-        include_shopping_list_prices=include_shopping_list_prices,
-        use_price_cache=not no_price_cache,
-        sync_mode="live",
-        refresh_available=True,
-        max_recommendations=max_recommendations,
-    )
+    session_api_key = api_key
+    source_available = _dashboard_source_available(api_key=api_key, input_dir=input_dir)
+
+    if source_available:
+        dashboard: str | DashboardPayload = _load_dashboard_payload(
+            api_key=session_api_key,
+            input_dir=input_dir,
+            use_cache=not no_cache,
+            collections_data=collections_data,
+            achievements_data=achievements_data,
+            recurring_data=recurring_data,
+            wizard_vault_data=wizard_vault_data,
+            starter_kit_sets=starter_kit_sets,
+            shopping_list_recipes=shopping_list_recipes,
+            shopping_list_quantity=shopping_list_quantity,
+            include_complete_shopping_list=include_complete_shopping_list,
+            include_shopping_list_prices=include_shopping_list_prices,
+            use_price_cache=not no_price_cache,
+            sync_mode="live",
+            refresh_available=True,
+            max_recommendations=max_recommendations,
+        )
+    else:
+        dashboard = render_api_key_setup_html()
+        console.print(
+            "[yellow]No account source configured.[/yellow] "
+            "Enter an API key in the local setup page."
+        )
 
     def refresh_provider() -> DashboardPayload:
         return _load_dashboard_payload(
-            api_key=api_key,
+            api_key=session_api_key,
             input_dir=input_dir,
             use_cache=not no_cache,
             collections_data=collections_data,
@@ -1416,11 +1427,36 @@ def serve_gui_dashboard(
             max_recommendations=max_recommendations,
         )
 
+    def api_key_setup_provider(submitted_api_key: str) -> DashboardPayload:
+        nonlocal session_api_key
+        candidate = submitted_api_key.strip()
+        payload = _load_dashboard_payload(
+            api_key=candidate,
+            input_dir=input_dir,
+            use_cache=not no_cache,
+            collections_data=collections_data,
+            achievements_data=achievements_data,
+            recurring_data=recurring_data,
+            wizard_vault_data=wizard_vault_data,
+            starter_kit_sets=starter_kit_sets,
+            shopping_list_recipes=shopping_list_recipes,
+            shopping_list_quantity=shopping_list_quantity,
+            include_complete_shopping_list=include_complete_shopping_list,
+            include_shopping_list_prices=include_shopping_list_prices,
+            use_price_cache=not no_price_cache,
+            sync_mode="live",
+            refresh_available=True,
+            max_recommendations=max_recommendations,
+        )
+        session_api_key = candidate
+        return payload
+
     server = create_dashboard_server(
-        payload,
+        dashboard,
         host=host,
         port=port,
         refresh_provider=refresh_provider,
+        api_key_setup_provider=api_key_setup_provider if not source_available else None,
     )
     resolved_host, resolved_port = server.server_address
     url = f"http://{resolved_host}:{resolved_port}/"
@@ -1664,6 +1700,19 @@ def _resolve_active_profile(settings: Settings) -> AccountProfile | None:
     except ProfileError as exc:
         _render_profile_error(exc)
         raise typer.Exit(1) from exc
+
+
+def _dashboard_source_available(*, api_key: str | None, input_dir: Path | None) -> bool:
+    if input_dir:
+        return True
+    settings = Settings.from_environment()
+    profile = _resolve_active_profile(settings)
+    if profile and profile.input_dir:
+        return True
+    resolved_key = api_key or (
+        profile.resolved_api_key(settings.api_key) if profile else settings.api_key
+    )
+    return bool(resolved_key)
 
 
 def _render_profile_error(exc: ProfileError) -> None:

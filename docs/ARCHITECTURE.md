@@ -263,11 +263,12 @@ flowchart LR
 optional shopping-list and shopping-list price views supplied by the CLI.
 `gui/server.py` owns local preview serving and exposes `/api/status` plus
 `/api/refresh` when a refresh provider is configured by `gw2planner gui serve`.
-`gui serve` defaults to port `0`, so the operating system assigns a free local
-port and the CLI prints the actual URL. Refresh success and failure states are
-reported through `DashboardSyncStatus`, allowing the browser view to show
-progress and setup errors without coupling the GUI to loader or planner
-exceptions.
+It can also expose `/api/setup/api-key` for the first-run local setup page; the
+CLI owns that provider and keeps the submitted key in process memory. `gui serve`
+defaults to port `0`, so the operating system assigns a free local port and the
+CLI prints the actual URL. Refresh success and failure states are reported
+through `DashboardSyncStatus`, allowing the browser view to show progress and
+setup errors without coupling the GUI to loader or planner exceptions.
 CLI commands may load account data and pass planner outputs into the GUI layer,
 but GUI code should not call GW2 API endpoints, parse inventory sources,
 evaluate recipes, or fetch commerce prices directly.

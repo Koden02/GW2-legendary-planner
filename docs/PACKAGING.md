@@ -45,6 +45,10 @@ To launch the dashboard against a configured profile or API key:
 .\dist\gw2planner.exe gui serve --open --port 0
 ```
 
+If no profile, environment API key, or local export directory is configured,
+that command starts a local setup page. Entering a GW2 API key there loads the
+dashboard for the current app session without writing the key to disk.
+
 To launch against local exports:
 
 ```powershell
