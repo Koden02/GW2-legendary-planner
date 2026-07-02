@@ -298,6 +298,64 @@ def test_cli_gui_build_success(tmp_path: Path) -> None:
     assert "Sample Weekly Achievement Progress" in html
 
 
+def test_cli_gui_build_can_include_shopping_list_prices(tmp_path: Path, monkeypatch) -> None:
+    from gw2_legendary_planner.planner.market import (
+        ShoppingListPriceEntry,
+        ShoppingListPriceReport,
+    )
+
+    def fake_price_report(report, *, use_cache: bool = True):
+        assert report.entries
+        assert use_cache is True
+        return ShoppingListPriceReport(
+            goals=report.goals,
+            entries=[
+                ShoppingListPriceEntry(
+                    kind="item",
+                    id=19675,
+                    name="Mystic Clover",
+                    missing_quantity=65,
+                    price_status="priced",
+                    buy_order_unit_price=80,
+                    sell_listing_unit_price=125,
+                    estimated_buy_cost=8_125,
+                    estimated_sell_value=5_200,
+                )
+            ],
+            priced_entry_count=1,
+            total_estimated_buy_cost=8_125,
+            total_estimated_sell_value=5_200,
+        )
+
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli._price_shopping_list_report",
+        fake_price_report,
+    )
+
+    output = tmp_path / "dashboard.html"
+    result = runner.invoke(
+        app,
+        [
+            "gui",
+            "build",
+            "--input",
+            str(FIXTURE_DIR),
+            "--shopping-list-recipe",
+            "legendary.bolt",
+            "--include-shopping-list-prices",
+            "--output",
+            str(output),
+        ],
+    )
+
+    assert result.exit_code == 0
+    html = output.read_text(encoding="utf-8")
+    assert "Market" in html
+    assert "1 priced entries" in html
+    assert "0g 81s 25c estimated buy cost" in html
+    assert "Mystic Clover" in html
+
+
 def test_cli_gui_build_fails_without_input_or_api_key(tmp_path: Path) -> None:
     result = runner.invoke(
         app,

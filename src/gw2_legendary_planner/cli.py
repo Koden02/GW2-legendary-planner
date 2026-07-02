@@ -1230,6 +1230,17 @@ def build_gui_dashboard(
         bool,
         typer.Option("--include-complete-shopping-list/--missing-shopping-list-only"),
     ] = False,
+    include_shopping_list_prices: Annotated[
+        bool,
+        typer.Option(
+            "--include-shopping-list-prices/--no-shopping-list-prices",
+            help="Fetch current GW2 trading-post price estimates for dashboard shopping lists.",
+        ),
+    ] = False,
+    no_price_cache: Annotated[
+        bool,
+        typer.Option("--no-price-cache", help="Disable commerce price response cache."),
+    ] = False,
     max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
 ) -> None:
     """Build a standalone browser dashboard."""
@@ -1246,6 +1257,8 @@ def build_gui_dashboard(
         shopping_list_recipes=shopping_list_recipes,
         shopping_list_quantity=shopping_list_quantity,
         include_complete_shopping_list=include_complete_shopping_list,
+        include_shopping_list_prices=include_shopping_list_prices,
+        use_price_cache=not no_price_cache,
         sync_mode="static",
         refresh_available=False,
         max_recommendations=max_recommendations,
@@ -1306,6 +1319,17 @@ def serve_gui_dashboard(
         bool,
         typer.Option("--include-complete-shopping-list/--missing-shopping-list-only"),
     ] = False,
+    include_shopping_list_prices: Annotated[
+        bool,
+        typer.Option(
+            "--include-shopping-list-prices/--no-shopping-list-prices",
+            help="Fetch current GW2 trading-post price estimates for dashboard shopping lists.",
+        ),
+    ] = False,
+    no_price_cache: Annotated[
+        bool,
+        typer.Option("--no-price-cache", help="Disable commerce price response cache."),
+    ] = False,
     max_recommendations: Annotated[int, typer.Option("--max", min=1)] = 10,
 ) -> None:
     """Serve the dashboard locally until interrupted."""
@@ -1322,6 +1346,8 @@ def serve_gui_dashboard(
         shopping_list_recipes=shopping_list_recipes,
         shopping_list_quantity=shopping_list_quantity,
         include_complete_shopping_list=include_complete_shopping_list,
+        include_shopping_list_prices=include_shopping_list_prices,
+        use_price_cache=not no_price_cache,
         sync_mode="live",
         refresh_available=True,
         max_recommendations=max_recommendations,
@@ -1340,6 +1366,8 @@ def serve_gui_dashboard(
             shopping_list_recipes=shopping_list_recipes,
             shopping_list_quantity=shopping_list_quantity,
             include_complete_shopping_list=include_complete_shopping_list,
+            include_shopping_list_prices=include_shopping_list_prices,
+            use_price_cache=not no_price_cache,
             sync_mode="live",
             refresh_available=True,
             max_recommendations=max_recommendations,
@@ -1786,6 +1814,8 @@ def _load_dashboard_payload(
     shopping_list_recipes: list[str] | None = None,
     shopping_list_quantity: int = 1,
     include_complete_shopping_list: bool = False,
+    include_shopping_list_prices: bool = False,
+    use_price_cache: bool = True,
     sync_mode: str = "static",
     refresh_available: bool = False,
     max_recommendations: int = 10,
@@ -1812,6 +1842,8 @@ def _load_dashboard_payload(
         shopping_list_recipes=shopping_list_recipes,
         shopping_list_quantity=shopping_list_quantity,
         include_complete_shopping_list=include_complete_shopping_list,
+        include_shopping_list_prices=include_shopping_list_prices,
+        use_price_cache=use_price_cache,
         max_recommendations=max_recommendations,
     )
 
@@ -1830,6 +1862,8 @@ def _build_dashboard_payload_for_snapshot(
     shopping_list_recipes: list[str] | None = None,
     shopping_list_quantity: int = 1,
     include_complete_shopping_list: bool = False,
+    include_shopping_list_prices: bool = False,
+    use_price_cache: bool = True,
     max_recommendations: int = 10,
 ) -> DashboardPayload:
     summary = build_account_summary(snapshot, inventory)
@@ -1856,12 +1890,18 @@ def _build_dashboard_payload_for_snapshot(
         if shopping_list_recipes
         else None
     )
+    shopping_list_prices = (
+        _price_shopping_list_report(shopping_list, use_cache=use_price_cache)
+        if shopping_list and include_shopping_list_prices
+        else None
+    )
     return build_dashboard_payload(
         summary,
         focus_items=focus_items,
         activities=activities,
         progression_report=progression_report,
         shopping_list=shopping_list,
+        shopping_list_prices=shopping_list_prices,
         source_label=source_label,
         sync_status=sync_status,
     )

@@ -13,6 +13,7 @@ from gw2_legendary_planner.gui.dashboard import (
 )
 from gw2_legendary_planner.gui.server import create_dashboard_server
 from gw2_legendary_planner.inventory.aggregator import InventoryAggregator
+from gw2_legendary_planner.models.commerce import CommercePrice
 from gw2_legendary_planner.planner.achievements import (
     build_achievement_report,
     load_achievement_goal_definitions_from_path,
@@ -23,6 +24,7 @@ from gw2_legendary_planner.planner.collections import (
     load_collection_definitions_from_path,
 )
 from gw2_legendary_planner.planner.legendary_focus import build_legendary_focus_report
+from gw2_legendary_planner.planner.market import price_shopping_list
 from gw2_legendary_planner.planner.progression import build_account_progression_report
 from gw2_legendary_planner.planner.recipe_evaluator import RecipeEvaluator
 from gw2_legendary_planner.planner.recipe_repository import get_default_recipe_repository
@@ -57,6 +59,18 @@ def test_dashboard_payload_and_html_include_account_progression() -> None:
     assert "Sync Status" in html
     assert "Dashboard built from a saved account snapshot." in html
     assert 'data-panel-target="recommendations"' in html
+
+
+def test_dashboard_html_can_include_shopping_list_prices() -> None:
+    payload = _sample_dashboard_payload(include_prices=True)
+
+    html = render_dashboard_html(payload)
+
+    assert payload.shopping_list_prices is not None
+    assert "Market" in html
+    assert "priced entries" in html
+    assert "0g 81s 25c estimated buy cost" in html
+    assert "priced" in html
 
 
 def test_write_dashboard_html_creates_parent_directories(tmp_path: Path) -> None:
@@ -151,7 +165,11 @@ def test_dashboard_server_refreshes_from_provider() -> None:
     assert "Refresh 1" in page.text
 
 
-def _sample_dashboard_payload(sync_status: DashboardSyncStatus | None = None):
+def _sample_dashboard_payload(
+    sync_status: DashboardSyncStatus | None = None,
+    *,
+    include_prices: bool = False,
+):
     snapshot = LocalExportLoader(FIXTURE_DIR).load()
     inventory = InventoryAggregator().aggregate(snapshot)
     summary = build_account_summary(snapshot, inventory)
@@ -185,12 +203,27 @@ def _sample_dashboard_payload(sync_status: DashboardSyncStatus | None = None):
     shopping_list = build_shopping_list(
         [RecipeEvaluator(get_default_recipe_repository()).evaluate(bolt, snapshot, inventory)]
     )
+    shopping_list_prices = (
+        price_shopping_list(
+            shopping_list,
+            {
+                19675: CommercePrice(
+                    id=19675,
+                    buys={"quantity": 20, "unit_price": 80},
+                    sells={"quantity": 12, "unit_price": 125},
+                )
+            },
+        )
+        if include_prices
+        else None
+    )
     return build_dashboard_payload(
         summary,
         focus_items=focus_items,
         activities=activities,
         progression_report=progression,
         shopping_list=shopping_list,
+        shopping_list_prices=shopping_list_prices,
         source_label="fixtures",
         sync_status=sync_status,
         generated_at=datetime(2026, 7, 2, 12, 0, tzinfo=UTC),

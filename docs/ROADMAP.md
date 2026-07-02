@@ -87,7 +87,8 @@ status plus a refresh action for reloading account data from the selected source
 Price-free shopping-list generation is available from recipe effective costs and
 can be exported as JSON or CSV. Optional shopping-list market price overlays can
 fetch `/v2/commerce/prices` summaries for missing item requirements without
-making recipes or recommendations price-aware.
+making recipes or recommendations price-aware. The dashboard can display those
+price overlays when `--include-shopping-list-prices` is selected.
 
-Next scope: native packaging, richer live synchronization UX, dashboard price
-display, multi-account profiles, and plugin loading.
+Next scope: native packaging, richer live synchronization UX, multi-account
+profiles, and plugin loading.

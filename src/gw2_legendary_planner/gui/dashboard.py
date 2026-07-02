@@ -10,6 +10,10 @@ from pydantic import BaseModel, Field
 from gw2_legendary_planner import __version__
 from gw2_legendary_planner.planner.activities import ActivityGoalStatus
 from gw2_legendary_planner.planner.legendary_focus import FocusEntry
+from gw2_legendary_planner.planner.market import (
+    ShoppingListPriceEntry,
+    ShoppingListPriceReport,
+)
 from gw2_legendary_planner.planner.progression import (
     AccountProgressionReport,
     AccountRecommendation,
@@ -61,6 +65,7 @@ class DashboardPayload(BaseModel):
     score_components: list[ProgressionScoreComponent] = Field(default_factory=list)
     recommendations: list[AccountRecommendation] = Field(default_factory=list)
     shopping_list: ShoppingListReport | None = None
+    shopping_list_prices: ShoppingListPriceReport | None = None
     focus_items: list[FocusEntry] = Field(default_factory=list)
     activities: list[ActivityGoalStatus] = Field(default_factory=list)
 
@@ -72,6 +77,7 @@ def build_dashboard_payload(
     activities: list[ActivityGoalStatus],
     progression_report: AccountProgressionReport | None = None,
     shopping_list: ShoppingListReport | None = None,
+    shopping_list_prices: ShoppingListPriceReport | None = None,
     source_label: str = "account data",
     sync_status: DashboardSyncStatus | None = None,
     generated_at: datetime | None = None,
@@ -96,6 +102,7 @@ def build_dashboard_payload(
         score_components=progression_report.score.components if progression_report else [],
         recommendations=progression_report.recommendations if progression_report else [],
         shopping_list=shopping_list,
+        shopping_list_prices=shopping_list_prices,
         focus_items=visible_focus_items,
         activities=activities,
     )
@@ -206,7 +213,7 @@ def render_dashboard_html(payload: DashboardPayload) -> str:
           <p class="eyebrow">Crafting Targets</p>
           <h2>Shopping List</h2>
         </div>
-        {_render_shopping_list(payload.shopping_list)}
+        {_render_shopping_list(payload.shopping_list, payload.shopping_list_prices)}
       </section>
 
       <section class="panel" data-panel="materials">
@@ -407,13 +414,19 @@ def _render_recommendations(recommendations: list[AccountRecommendation]) -> str
     """
 
 
-def _render_shopping_list(report: ShoppingListReport | None) -> str:
+def _render_shopping_list(
+    report: ShoppingListReport | None,
+    price_report: ShoppingListPriceReport | None,
+) -> str:
     if report is None:
         return _empty_state("Add --shopping-list-recipe to include crafting targets.")
     if not report.entries:
         return _empty_state("No missing effective costs for the selected recipes.")
+    price_by_key = _shopping_price_entries_by_key(price_report)
+    has_prices = price_report is not None
     rows = []
     for entry in report.entries:
+        price_entry = price_by_key.get((entry.kind, entry.id))
         rows.append(
             f"""
             <tr>
@@ -426,6 +439,7 @@ def _render_shopping_list(report: ShoppingListReport | None) -> str:
               <td class="numeric">{entry.available_quantity:,}</td>
               <td class="numeric">{entry.missing_quantity:,}</td>
               <td>{escape(entry.acquisition.label if entry.acquisition else "-")}</td>
+              {_render_shopping_price_cells(price_entry) if has_prices else ""}
               <td>{escape(_format_contributions(entry.contributions))}</td>
             </tr>
             """
@@ -435,9 +449,10 @@ def _render_shopping_list(report: ShoppingListReport | None) -> str:
           <span>{report.goal_count:,} goals</span>
           <span>{report.missing_entry_count:,} missing entries</span>
           <span>{report.total_missing_quantity:,} total missing quantity</span>
+          {_render_shopping_price_summary(price_report)}
         </div>
         <div class="table-shell">
-          <table>
+          <table class="shopping-table">
             <thead>
               <tr>
                 <th>Requirement</th>
@@ -446,6 +461,7 @@ def _render_shopping_list(report: ShoppingListReport | None) -> str:
                 <th class="numeric">Available</th>
                 <th class="numeric">Missing</th>
                 <th>Acquisition</th>
+                {_render_shopping_price_headers() if has_prices else ""}
                 <th>Recipes</th>
               </tr>
             </thead>
@@ -454,6 +470,57 @@ def _render_shopping_list(report: ShoppingListReport | None) -> str:
             </tbody>
           </table>
         </div>
+    """
+
+
+def _shopping_price_entries_by_key(
+    price_report: ShoppingListPriceReport | None,
+) -> dict[tuple[str, int | str], ShoppingListPriceEntry]:
+    if price_report is None:
+        return {}
+    return {(entry.kind, entry.id): entry for entry in price_report.entries}
+
+
+def _render_shopping_price_summary(price_report: ShoppingListPriceReport | None) -> str:
+    if price_report is None:
+        return ""
+    buy_cost = escape(_format_copper(price_report.total_estimated_buy_cost))
+    return f"""
+          <span>{price_report.priced_entry_count:,} priced entries</span>
+          <span>{price_report.unpriced_entry_count:,} unpriced entries</span>
+          <span>{buy_cost} estimated buy cost</span>
+    """
+
+
+def _render_shopping_price_headers() -> str:
+    return """
+                <th>Market</th>
+                <th class="numeric">Buy Now</th>
+                <th class="numeric">Est. Buy</th>
+    """
+
+
+def _render_shopping_price_cells(price_entry: ShoppingListPriceEntry | None) -> str:
+    if price_entry is None:
+        return """
+              <td><span class="pill tone-low">not priced</span></td>
+              <td class="numeric">-</td>
+              <td class="numeric">-</td>
+        """
+
+    tone = "good" if price_entry.is_priced else "warning"
+    note = f"<span>{escape(price_entry.note)}</span>" if price_entry.note else ""
+    sell_listing = escape(_format_optional_copper(price_entry.sell_listing_unit_price))
+    estimated_buy = escape(_format_optional_copper(price_entry.estimated_buy_cost))
+    return f"""
+              <td>
+                <span class="pill tone-{tone}">
+                  {escape(price_entry.price_status.replace("_", " "))}
+                </span>
+                {note}
+              </td>
+              <td class="numeric">{sell_listing}</td>
+              <td class="numeric">{estimated_buy}</td>
     """
 
 
@@ -552,6 +619,16 @@ def _format_contributions(contributions) -> str:
         f"{contribution.recipe_name} x{contribution.required_quantity:,}"
         for contribution in contributions
     )
+
+
+def _format_optional_copper(value: int | None) -> str:
+    return _format_copper(value) if value is not None else "-"
+
+
+def _format_copper(value: int) -> str:
+    gold, remainder = divmod(value, 10_000)
+    silver, copper = divmod(remainder, 100)
+    return f"{gold:,}g {silver:02d}s {copper:02d}c"
 
 
 def _format_datetime(value: datetime) -> str:

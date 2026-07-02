@@ -101,7 +101,7 @@ uv run gw2planner export shopping-list legendary.bolt --input ./exports/ --inclu
 uv run gw2planner export starter-kits --input ./exports/ --set 1 --format csv
 uv run gw2planner export wizard-vault --data ./wizard-vault-season.json --format json
 uv run gw2planner export wizard-vault-optimization --input ./exports/ --data ./wizard-vault-season.json --format csv
-uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --output dashboard.html
+uv run gw2planner gui build --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --include-shopping-list-prices --output dashboard.html
 uv run gw2planner gui serve --input ./exports/ --achievements-data ./achievements.json --collections-data ./collections.json --recurring-data ./recurring.json --shopping-list-recipe legendary.bolt --port 8765
 uv run gw2planner doctor --input ./exports/
 uv run gw2planner doctor --require-api-key
@@ -109,6 +109,7 @@ uv run gw2planner doctor --require-api-key
 
 `gui build` writes a standalone snapshot. `gui serve` hosts the dashboard locally
 with a refresh control that reloads account data from the selected source.
+Dashboard shopping-list prices are opt-in with `--include-shopping-list-prices`.
 
 `--input` expects JSON files named after supported endpoints:
 
