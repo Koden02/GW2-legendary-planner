@@ -15,7 +15,7 @@ from gw2_legendary_planner.gui.dashboard import (
 )
 
 DashboardRefreshProvider = Callable[[], DashboardPayload]
-DashboardSetupProvider = Callable[[str], DashboardPayload]
+DashboardSetupProvider = Callable[[str, bool], DashboardPayload]
 _MAX_JSON_BODY_BYTES = 64 * 1024
 
 
@@ -72,12 +72,17 @@ class DashboardServer(ThreadingHTTPServer):
             self._html = html
         return payload
 
-    def setup_with_api_key(self, api_key: str) -> DashboardPayload:
+    def setup_with_api_key(
+        self,
+        api_key: str,
+        *,
+        remember_api_key: bool = False,
+    ) -> DashboardPayload:
         if not self._api_key_setup_provider:
             raise DashboardSetupUnavailableError(
                 "API key setup is not available for this server."
             )
-        payload = self._api_key_setup_provider(api_key)
+        payload = self._api_key_setup_provider(api_key, remember_api_key)
         html = render_dashboard_html(payload)
         with self._lock:
             self._payload = payload
@@ -161,13 +166,17 @@ def create_dashboard_server(
             try:
                 request_payload = self._read_json_payload()
                 api_key = str(request_payload.get("api_key", "")).strip()
+                remember_api_key = bool(request_payload.get("remember_api_key", False))
                 if not api_key:
                     self._send_json(
                         {"error": "API key is required."},
                         status=HTTPStatus.BAD_REQUEST,
                     )
                     return
-                payload = self.server.setup_with_api_key(api_key)
+                payload = self.server.setup_with_api_key(
+                    api_key,
+                    remember_api_key=remember_api_key,
+                )
             except ValueError as exc:
                 self._send_json(
                     {"error": str(exc)},

@@ -164,6 +164,7 @@ console = Console()
 Format = Literal["json", "csv"]
 RecipeFormat = Literal["rich", "json", "csv"]
 _ACTIVE_PROFILE: str | None = None
+_DASHBOARD_PROFILE_NAME = "local-dashboard"
 
 
 @app.callback()
@@ -1431,7 +1432,10 @@ def serve_gui_dashboard(
             max_recommendations=max_recommendations,
         )
 
-    def api_key_setup_provider(submitted_api_key: str) -> DashboardPayload:
+    def api_key_setup_provider(
+        submitted_api_key: str,
+        remember_api_key: bool = False,
+    ) -> DashboardPayload:
         nonlocal session_api_key
         candidate = submitted_api_key.strip()
         payload = _load_dashboard_payload(
@@ -1452,6 +1456,8 @@ def serve_gui_dashboard(
             refresh_available=True,
             max_recommendations=max_recommendations,
         )
+        if remember_api_key:
+            _remember_dashboard_api_key(candidate)
         session_api_key = candidate
         return payload
 
@@ -1729,6 +1735,18 @@ def _profile_api_source(profile: AccountProfile) -> str:
     if profile.api_key_env:
         return f"env:{profile.api_key_env}"
     return "global env fallback"
+
+
+def _remember_dashboard_api_key(api_key: str) -> None:
+    settings = Settings.from_environment()
+    profile = AccountProfile(
+        name=_DASHBOARD_PROFILE_NAME,
+        api_key=api_key,
+    )
+    try:
+        ProfileStore(settings.profile_file).upsert_profile(profile, make_default=True)
+    except ProfileError as exc:
+        raise typer.BadParameter(f"Could not remember API key: {exc}") from exc
 
 
 def _load_recipe_or_exit(recipe_id: str, repository=None):

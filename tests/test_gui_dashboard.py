@@ -144,10 +144,13 @@ def test_api_key_setup_page_explains_memory_only_key() -> None:
 
     assert "Guild Wars 2 API key" in html
     assert "Load Account" in html
-    assert "kept in memory for this session" in html
+    assert "kept in memory for this session only" in html
+    assert "Remember this key on this computer" in html
+    assert "stored in the local GW2 Legendary Planner profile file as plaintext" in html
     assert "Local setup" in html
     assert "data-api-key-form" in html
     assert "data-api-key-input" in html
+    assert "data-remember-api-key" in html
 
 
 def test_dashboard_server_default_port_uses_free_port() -> None:
@@ -298,10 +301,10 @@ def test_dashboard_server_static_refresh_unavailable_remains_method_error() -> N
 
 
 def test_dashboard_server_api_key_setup_loads_dashboard_from_provider() -> None:
-    captured_api_keys: list[str] = []
+    captured_setup_requests: list[tuple[str, bool]] = []
 
-    def setup_provider(api_key: str):
-        captured_api_keys.append(api_key)
+    def setup_provider(api_key: str, remember_api_key: bool = False):
+        captured_setup_requests.append((api_key, remember_api_key))
         return _sample_dashboard_payload(
             sync_status=DashboardSyncStatus(
                 mode="live",
@@ -323,7 +326,7 @@ def test_dashboard_server_api_key_setup_loads_dashboard_from_provider() -> None:
     try:
         setup = httpx.post(
             f"http://{host}:{port}/api/setup/api-key",
-            json={"api_key": " fixture-key "},
+            json={"api_key": " fixture-key ", "remember_api_key": True},
             timeout=5,
         )
         status = httpx.get(f"http://{host}:{port}/api/status", timeout=5)
@@ -335,7 +338,7 @@ def test_dashboard_server_api_key_setup_loads_dashboard_from_provider() -> None:
 
     assert setup.status_code == 200
     assert setup.json()["message"] == "Loaded from setup."
-    assert captured_api_keys == ["fixture-key"]
+    assert captured_setup_requests == [("fixture-key", True)]
     assert status.json()["state"] == "ready"
     assert status.json()["source_kind"] == "gw2_api"
     assert "Example.1234" in page.text
@@ -346,7 +349,7 @@ def test_dashboard_server_api_key_setup_validates_json_payload() -> None:
     server = create_dashboard_server(
         render_api_key_setup_html(),
         port=0,
-        api_key_setup_provider=lambda api_key: _sample_dashboard_payload(),
+        api_key_setup_provider=lambda api_key, remember_api_key=False: _sample_dashboard_payload(),
     )
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()

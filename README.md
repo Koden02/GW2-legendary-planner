@@ -118,9 +118,11 @@ are opt-in with `--include-shopping-list-prices`. Use `--port 0` to let the
 operating system choose an unused local port. If `gui serve` starts without a
 profile, local export directory, or configured API key, it opens a local setup
 page where you can enter a GW2 API key for that running app session. Static
-`gui build` commands still require a source up front. The dashboard also
-includes a Current Goals comparison view for choosing one or more legendary
-targets independently from the recommendation ranking.
+`gui build` commands still require a source up front. The setup page can also
+remember the key on this computer by writing a `local-dashboard` profile with a
+stored plaintext API key. The dashboard also includes a Current Goals comparison
+view for choosing one or more legendary targets independently from the
+recommendation ranking.
 
 Profiles are stored as JSON at `GW2PLANNER_PROFILE_FILE` or under
 `GW2PLANNER_CONFIG_DIR`. A profile can point at local exports or an API key

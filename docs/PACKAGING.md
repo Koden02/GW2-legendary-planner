@@ -47,7 +47,9 @@ To launch the dashboard against a configured profile or API key:
 
 If no profile, environment API key, or local export directory is configured,
 that command starts a local setup page. Entering a GW2 API key there loads the
-dashboard for the current app session without writing the key to disk.
+dashboard for the current app session without writing the key to disk. Checking
+the remember option stores the key as plaintext in a local `local-dashboard`
+profile so future launches can load the account automatically.
 
 To launch against local exports:
 

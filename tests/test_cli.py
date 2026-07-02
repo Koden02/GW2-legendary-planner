@@ -5,6 +5,7 @@ from shutil import copytree
 from typer.testing import CliRunner
 
 from gw2_legendary_planner.cli import app
+from gw2_legendary_planner.config.profiles import ProfileStore
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "exports"
 ACHIEVEMENT_FIXTURE = (
@@ -439,6 +440,53 @@ def test_cli_gui_serve_without_source_starts_setup_page(tmp_path: Path, monkeypa
     assert isinstance(kwargs, dict)
     assert kwargs["api_key_setup_provider"] is not None
     assert kwargs["refresh_provider"] is not None
+
+
+def test_cli_gui_serve_can_remember_setup_api_key(tmp_path: Path, monkeypatch) -> None:
+    profile_file = tmp_path / "profiles.json"
+
+    class FakeDashboardServer:
+        server_address = ("127.0.0.1", 8765)
+
+        def __init__(self, setup_provider) -> None:
+            self.setup_provider = setup_provider
+
+        def serve_forever(self) -> None:
+            assert self.setup_provider is not None
+            self.setup_provider(" remembered-key ", True)
+            raise KeyboardInterrupt
+
+        def server_close(self) -> None:
+            return
+
+    def fake_create_dashboard_server(dashboard, **kwargs):
+        return FakeDashboardServer(kwargs["api_key_setup_provider"])
+
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli.create_dashboard_server",
+        fake_create_dashboard_server,
+    )
+    monkeypatch.setattr(
+        "gw2_legendary_planner.cli._load_dashboard_payload",
+        lambda **kwargs: object(),
+    )
+
+    result = runner.invoke(
+        app,
+        ["gui", "serve", "--port", "0"],
+        env={
+            "GW2PLANNER_API_KEY": "",
+            "GW2_API_KEY": "",
+            "GW2PLANNER_PROFILE_FILE": str(profile_file),
+        },
+    )
+
+    profile = ProfileStore(profile_file).get_profile()
+
+    assert result.exit_code == 0
+    assert profile is not None
+    assert profile.name == "local-dashboard"
+    assert profile.api_key == "remembered-key"
 
 
 def test_cli_doctor_success() -> None:

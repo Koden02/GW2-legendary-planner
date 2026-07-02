@@ -42,8 +42,18 @@ def render_api_key_setup_html(*, app_name: str = "GW2 Legendary Planner") -> str
           >
           <button type="submit" data-api-key-submit>Load Account</button>
         </div>
+        <label class="remember-row" for="remember-api-key">
+          <input
+            id="remember-api-key"
+            name="remember_api_key"
+            type="checkbox"
+            data-remember-api-key
+          >
+          <span>Remember this key on this computer</span>
+        </label>
         <p class="hint">
-          The key is sent to this local app server and kept in memory for this session.
+          By default, the key is kept in memory for this session only. If remembered,
+          it is stored in the local GW2 Legendary Planner profile file as plaintext.
         </p>
         <p class="setup-error" data-setup-error hidden></p>
       </form>
@@ -185,6 +195,21 @@ button:disabled {
   font-size: 0.88rem;
 }
 
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-weight: 700;
+}
+
+.remember-row input {
+  min-height: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
 .setup-error {
   margin: 12px 0 0;
   color: var(--danger);
@@ -226,6 +251,7 @@ _SETUP_JS = """
 (function () {
   const form = document.querySelector("[data-api-key-form]");
   const input = document.querySelector("[data-api-key-input]");
+  const remember = document.querySelector("[data-remember-api-key]");
   const submit = document.querySelector("[data-api-key-submit]");
   const error = document.querySelector("[data-setup-error]");
 
@@ -260,7 +286,10 @@ _SETUP_JS = """
       const response = await fetch("/api/setup/api-key", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: apiKey }),
+        body: JSON.stringify({
+          api_key: apiKey,
+          remember_api_key: Boolean(remember && remember.checked),
+        }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
